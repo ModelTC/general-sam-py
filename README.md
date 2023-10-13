@@ -12,6 +12,12 @@ and some utilities.
 [sam-of-abcbc]: https://oi-wiki.org/string/images/SAM/SA_suffix_links.svg
 [sam-oi-wiki]: https://oi-wiki.org/string/sam/
 
+## Installation
+
+```sh
+pip install general-sam
+```
+
 ## Usage
 
 ### `GeneralSAM`
