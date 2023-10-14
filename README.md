@@ -1,6 +1,8 @@
 # general-sam-py
 
-![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-informational?style=flat-square)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-informational)](#license)
+[![PyPI version](https://badge.fury.io/py/general-sam.svg)](https://badge.fury.io/py/general-sam)
+[![Workflow Status](https://github.com/ModelTC/general-sam-py/workflows/main/badge.svg)](https://github.com/ModelTC/general-sam-py/actions?query=workflow%3A%22main%22)
 
 Python bindings for [`general-sam`](https://github.com/ModelTC/general-sam)
 and some utilities.
@@ -86,71 +88,80 @@ from general_sam import VocabPrefixAutomaton, CountInfo
 vocab = ['歌曲', '聆听歌曲', '播放歌曲', '歌词', '查看歌词']
 automaton = VocabPrefixAutomaton(vocab, bytes_or_chars='chars')
 
-# NOTE: CountInfo is related to the sorted vocab:
+# NOTE: CountInfo instances are actually related to the sorted `vocab`:
 _ = ['播放歌曲', '查看歌词', '歌曲', '歌词', '聆听歌曲']
 
-# 一起 | 聆 | 听 | 歌
+# Case 1:
+#   一起 | 聆 | 听 | 歌
 state = automaton.get_root_state()
 
-# feed 歌
+# prepend '歌'
 cnt_info = automaton.prepend_feed(state, '歌')
 assert cnt_info is not None and cnt_info == CountInfo(
     str_cnt=2, tot_cnt_lower=2, tot_cnt_upper=4
 )
 
+# found '歌曲' at the index 0 and '歌词' at the index 3 prefixed with '歌'
 selected_idx = automaton.get_order_slice(cnt_info)
 assert frozenset(selected_idx) == {0, 3}
 selected_vocab = [vocab[i] for i in selected_idx]
 assert frozenset(selected_vocab) == {'歌曲', '歌词'}
 
-# feed 听
+# prepend 听
 cnt_info = automaton.prepend_feed(state, '听')
+# found nothing prefixed with '听歌'
 assert cnt_info is None
 assert not state.is_nil()
 
-# feed 聆
+# prepend 聆
 cnt_info = automaton.prepend_feed(state, '聆')
 assert cnt_info is not None and cnt_info == CountInfo(
     str_cnt=1, tot_cnt_lower=4, tot_cnt_upper=5
 )
 
+# found '聆听歌曲' at the index 1 prefixed with '聆听歌'
 selected_idx = automaton.get_order_slice(cnt_info)
 assert frozenset(selected_idx) == {1}
 selected_vocab = [vocab[i] for i in selected_idx]
 assert frozenset(selected_vocab) == {'聆听歌曲'}
 
-# feed 一起
+# prepend 一起
 assert not state.is_nil()
+# found nothing prefixed with '一起聆听歌'
 cnt_info = automaton.prepend_feed(state, '一起')
 assert state.is_nil()
 
-# 来 | 查看 | 歌词
+# Case 2:
+#   来 | 查看 | 歌词
 state = automaton.get_root_state()
 
-# feed 歌词
+# prepend 歌词
 cnt_info = automaton.prepend_feed(state, '歌词')
 assert cnt_info is not None and cnt_info == CountInfo(
     str_cnt=1, tot_cnt_lower=3, tot_cnt_upper=4
 )
 
+# found '歌词' at the index 3 prefixed with '歌词'
 selected_idx = automaton.get_order_slice(cnt_info)
 assert frozenset(selected_idx) == {3}
 selected_vocab = [vocab[i] for i in selected_idx]
 assert frozenset(selected_vocab) == {'歌词'}
 
-# feed 查看
+# prepend 查看
 cnt_info = automaton.prepend_feed(state, '查看')
 assert cnt_info is not None and cnt_info == CountInfo(
     str_cnt=1, tot_cnt_lower=1, tot_cnt_upper=2
 )
 
+# found '查看歌词' at the index 4 prefixed with '查看歌词'
 selected_idx = automaton.get_order_slice(cnt_info)
 assert frozenset(selected_idx) == {4}
 selected_vocab = [vocab[i] for i in selected_idx]
 assert frozenset(selected_vocab) == {'查看歌词'}
 
-# feed 来
+# prepend 来
 assert not state.is_nil()
+# found nothing prefixed with '来查看歌词'
 cnt_info = automaton.prepend_feed(state, '来')
 assert state.is_nil()
 ```
