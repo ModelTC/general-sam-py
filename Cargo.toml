@@ -4,8 +4,8 @@ version = "0.1.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Python bindings for general-sam and some utilities"
-repository = "https://github.com/ModelTC/general-sam"
-homepage = "https://github.com/ModelTC/general-sam/tree/main/pybind"
+homepage = "https://github.com/ModelTC/general-sam-py"
+repository = "https://github.com/ModelTC/general-sam-py"
 readme = "README.md"
 authors = ["Chielo Newctle <ChieloNewctle@gmail.com>"]
 
