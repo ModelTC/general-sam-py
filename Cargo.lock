@@ -37,13 +37,13 @@ checksum = "a26ae43d7bcc3b814de94796a5e736d4029efb0ee900c12e2d54c993ad1a1e07"
 
 [[package]]
 name = "general-sam"
-version = "0.1.1"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6c977936300f6022f245ccdde355c3768c4144239db83ea0d2992747bde46bc"
+checksum = "4b055432df7ff3bdc87115ea3d032750f88058d8af4940f73e42e3f80bffe9a5"
 
 [[package]]
 name = "general-sam-py"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "either",
  "general-sam",
