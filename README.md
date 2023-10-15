@@ -1,18 +1,35 @@
 # general-sam-py
 
-[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-informational)](#license)
-[![PyPI version](https://badge.fury.io/py/general-sam.svg)](https://badge.fury.io/py/general-sam)
-[![Workflow Status](https://github.com/ModelTC/general-sam-py/workflows/main/badge.svg)](https://github.com/ModelTC/general-sam-py/actions?query=workflow%3A%22main%22)
+[![PyPI version](https://img.shields.io/pypi/v/general-sam.svg)](https://pypi.org/project/general-sam/)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-informational.svg)](#license)
+[![Build status](https://github.com/ModelTC/general-sam-py/actions/workflows/ci.yml/badge.svg)](https://github.com/ModelTC/general-sam-py/actions)
 
 Python bindings for [`general-sam`](https://github.com/ModelTC/general-sam)
 and some utilities.
 
-|         [![the suffix automaton of abcbc][sam-of-abcbc]][sam-oi-wiki]          |
-| :----------------------------------------------------------------------------: |
-| The suffix automaton of abcbc, image from [后缀自动机 - OI Wiki][sam-oi-wiki]. |
+```mermaid
+flowchart LR
+  init((ε))
+  a((a))
+  b((b))
+  ab((ab))
+  bc(((bc)))
+  abc((abc))
+  abcb((abcb))
+  abcbc(((abcbc)))
 
-[sam-of-abcbc]: https://oi-wiki.org/string/images/SAM/SA_suffix_links.svg
-[sam-oi-wiki]: https://oi-wiki.org/string/sam/
+  init -- a --> a
+  init -- b --> b
+  a -- b --> ab
+  b -- c --> bc
+  init -- c --> bc
+  ab -- c --> abc
+  bc -- b --> abcb
+  abc -- b --> abcb
+  abcb -- c --> abcbc
+```
+
+> The suffix automaton of abcbc.
 
 ## Installation
 
@@ -30,10 +47,12 @@ from general_sam import GeneralSAM
 
 sam = GeneralSAM.construct_from_bytes(b'abcbc')
 
+# "cbc" is a suffix.
 state = sam.get_root_state()
 state.feed_bytes(b'cbc')
 assert state.is_accepting()
 
+# "bcb" isn't a suffix.
 state = sam.get_root_state()
 state.feed_bytes(b'bcb')
 assert not state.is_accepting()
@@ -46,12 +65,19 @@ from general_sam import GeneralSAM
 sam = GeneralSAM.construct_from_chars('abcbc')
 state = sam.get_root_state()
 
+# "b" is not a suffix but a substring.
 state.feed_chars('b')
 assert not state.is_accepting()
+
+# "bc" is a suffix.
 state.feed_chars('c')
 assert state.is_accepting()
+
+# "bcbc" is also a suffix.
 state.feed_chars('bc')
 assert state.is_accepting()
+
+# "bcbcbc" is not a substring.
 state.feed_chars('bc')
 assert not state.is_accepting() and state.is_nil()
 ```
@@ -168,7 +194,7 @@ assert state.is_nil()
 
 ## License
 
-- &copy; 2023 Chielo Newctle \<ChieloNewctle@gmail.com\>
+- &copy; 2023 Chielo Newctle \<[ChieloNewctle@gmail.com](mailto:ChieloNewctle@gmail.com)\>
 - &copy; 2023 ModelTC Team
 
 This project is licensed under either of
