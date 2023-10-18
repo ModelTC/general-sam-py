@@ -41,8 +41,8 @@ impl TrieNode {
     }
 
     pub fn get_trans(&self) -> PyObject {
-        Python::with_gil(|py| {
-            for_both!(self.1.as_ref(), x => {
+        for_both!(self.1.as_ref(), x => {
+            Python::with_gil(|py| {
                 x.get_trans().clone().into_py(py)
             })
         })
