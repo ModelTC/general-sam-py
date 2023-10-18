@@ -188,6 +188,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/*.whl
-            dist/*.tar.gz
+            *.whl
+            *.tar.gz
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}
