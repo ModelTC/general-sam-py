@@ -258,9 +258,9 @@ impl GeneralSAM {
         GeneralSAMState(self.0.clone(), node_id)
     }
 
-    pub fn get_topo_order(&self) -> Vec<GeneralSAMState> {
+    pub fn get_topo_and_suf_len_sorted_states(&self) -> Vec<GeneralSAMState> {
         for_both!(self.0.as_ref(), x => {
-            x.get_topo_sorted_node_ids()
+            x.get_topo_and_suf_len_sorted_node_ids()
                 .iter()
                 .map(|node_id| self.get_state(*node_id))
                 .collect()
