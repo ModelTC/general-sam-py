@@ -86,7 +86,8 @@ class VocabPrefixAutomaton(object):
             state_id = state.get_node_id()
             self.cnt_info_in_sam[state_id] = replace(cnt_info, str_cnt=1)
 
-        for sam_state in reversed(self.sam_rev.get_topo_order()):
+        depth_sorted_order = self.sam_rev.get_topo_and_suf_len_sorted_states()
+        for sam_state in reversed(depth_sorted_order):
             assert not sam_state.is_nil()
             if sam_state.is_root():
                 continue
