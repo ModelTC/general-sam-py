@@ -59,8 +59,8 @@ impl GeneralSAMState {
     }
 
     pub fn get_trans(&self) -> PyObject {
-        Python::with_gil(|py| {
-            for_both!(self.get_state().as_ref(), state => {
+        for_both!(self.get_state().as_ref(), state => {
+            Python::with_gil(|py| {
                 if let Some(node) = state.get_node() {
                     node.get_trans().clone().into_py(py)
                 } else {
