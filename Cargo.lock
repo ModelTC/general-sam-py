@@ -43,7 +43,7 @@ checksum = "e74244ef4e318efa0c8a51957e1635052676139a9a422d64893b36faf9024f60"
 
 [[package]]
 name = "general-sam-py"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "either",
  "general-sam",
