@@ -1,5 +1,6 @@
 pub mod sam;
 pub mod trie;
+pub mod utils;
 
 use pyo3::prelude::*;
 

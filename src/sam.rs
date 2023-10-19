@@ -1,20 +1,14 @@
 extern crate general_sam as general_sam_rs;
 
 use crate::trie::Trie;
-
-use std::{str::from_utf8, sync::Arc};
-
-use either::{
-    for_both, Either as CharOrByte,
-    {Either::Left as CharSide, Either::Right as ByteSide},
-};
-use pyo3::{prelude::*, types::PyDict};
+use crate::utils::{char_or_byte_type, for_both, ByteSide, CharSide};
 
 use general_sam_rs::{sam as sam_rs, trie as trie_rs, trie_alike::TravelEvent};
+use pyo3::{prelude::*, types::PyDict};
+use std::{str::from_utf8, sync::Arc};
 
-type RustGeneralSAM = CharOrByte<sam_rs::GeneralSAM<char>, sam_rs::GeneralSAM<u8>>;
-type RustGeneralSAMState<'s> =
-    CharOrByte<sam_rs::GeneralSAMState<'s, char>, sam_rs::GeneralSAMState<'s, u8>>;
+type RustGeneralSAM = char_or_byte_type!(sam_rs::GeneralSAM);
+type RustGeneralSAMState<'s> = char_or_byte_type!(sam_rs::GeneralSAMState; 's);
 
 #[pyclass]
 pub struct GeneralSAM(pub Arc<RustGeneralSAM>);
