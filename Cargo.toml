@@ -1,6 +1,6 @@
 [package]
 name = "general-sam-py"
-version = "0.3.0"
+version = "0.4.2"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Python bindings for general-sam and some utilities"
@@ -9,13 +9,12 @@ repository = "https://github.com/ModelTC/general-sam-py"
 readme = "README.md"
 authors = ["Chielo Newctle <ChieloNewctle@gmail.com>"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 name = "general_sam"
 crate-type = ["cdylib"]
 
 [dependencies]
-general-sam = "0.3.0"
+general-sam = { version = "0.4.2", features = ["all"] }
 pyo3 = { version = "0.20.0", features = [
   "extension-module",
   "abi3-py38",
