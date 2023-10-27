@@ -136,28 +136,32 @@ impl GeneralSAMState {
         );
         for_both!(sam_state_and_trie, (sam_state, trie) => {
             let tn = trie.get_state(trie_node_id.unwrap_or(trie_rs::TRIE_ROOT_NODE_ID));
-            sam_state.dfs_along(tn, |event| match event {
-                TravelEvent::Push((st, tn), key_opt) => Python::with_gil(|py| {
-                    in_stack_callback
-                        .call1(
+            sam_state.dfs_along(tn, |event| {
+                match event {
+                    TravelEvent::PushRoot((st, tn)) => Python::with_gil(|py| {
+                        in_stack_callback.call1(
                             py,
                             (
                                 GeneralSAMState(self.0.clone(), st.node_id),
                                 tn.node_id,
-                                key_opt,
+                                None::<()>,
                             ),
                         )
-                        .map(|_| ())
-                })
-                .map(|_| ()),
-                TravelEvent::Pop((st, tn)) => Python::with_gil(|py| {
-                    out_stack_callback
-                        .call1(
+                    }),
+                    TravelEvent::Push((st, tn), _, key) => Python::with_gil(|py| {
+                        in_stack_callback.call1(
+                            py,
+                            (GeneralSAMState(self.0.clone(), st.node_id), tn.node_id, key),
+                        )
+                    }),
+                    TravelEvent::Pop((st, tn), _) => Python::with_gil(|py| {
+                        out_stack_callback.call1(
                             py,
                             (GeneralSAMState(self.0.clone(), st.node_id), tn.node_id),
                         )
-                        .map(|_| ())
-                }),
+                    }),
+                }
+                .map(|_| ())
             })
         })
     }
@@ -177,28 +181,32 @@ impl GeneralSAMState {
         );
         for_both!(sam_state_and_trie, (sam_state, trie) => {
             let tn = trie.get_state(trie_node_id.unwrap_or(trie_rs::TRIE_ROOT_NODE_ID));
-            sam_state.bfs_along(tn, |event| match event {
-                TravelEvent::Push((st, tn), key_opt) => Python::with_gil(|py| {
-                    in_stack_callback
-                        .call1(
+            sam_state.bfs_along(tn, |event| {
+                match event {
+                    TravelEvent::PushRoot((st, tn)) => Python::with_gil(|py| {
+                        in_stack_callback.call1(
                             py,
                             (
                                 GeneralSAMState(self.0.clone(), st.node_id),
                                 tn.node_id,
-                                key_opt,
+                                None::<()>,
                             ),
                         )
-                        .map(|_| ())
-                })
-                .map(|_| ()),
-                TravelEvent::Pop((st, tn)) => Python::with_gil(|py| {
-                    out_stack_callback
-                        .call1(
+                    }),
+                    TravelEvent::Push((st, tn), _, key) => Python::with_gil(|py| {
+                        in_stack_callback.call1(
+                            py,
+                            (GeneralSAMState(self.0.clone(), st.node_id), tn.node_id, key),
+                        )
+                    }),
+                    TravelEvent::Pop((st, tn), _) => Python::with_gil(|py| {
+                        out_stack_callback.call1(
                             py,
                             (GeneralSAMState(self.0.clone(), st.node_id), tn.node_id),
                         )
-                        .map(|_| ())
-                }),
+                    }),
+                }
+                .map(|_| ())
             })
         })
     }

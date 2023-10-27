@@ -93,7 +93,7 @@ impl Trie {
             let mut res = Vec::new();
             state
                 .bfs_travel(|event| -> Result<(), Infallible> {
-                    if let TravelEvent::Push(s, _) = event {
+                    if let TravelEvent::Push(s, _, _) = event {
                         res.push(s.node_id);
                     }
                     Ok(())
@@ -129,14 +129,19 @@ impl Trie {
             if root_state.is_nil() {
                 return Ok(());
             }
-            root_state.dfs_travel(|event| match event {
-                TravelEvent::Push(tn, key_opt) => Python::with_gil(|py| {
-                    in_stack_callback.call1(py, (tn.node_id, key_opt))
-                })
-                .map(|_| ()),
-                TravelEvent::Pop(tn) => {
-                    Python::with_gil(|py| out_stack_callback.call1(py, (tn.node_id,))).map(|_| ())
+            root_state.dfs_travel(|event| {
+                match event {
+                    TravelEvent::PushRoot(tn) => {
+                        Python::with_gil(|py| in_stack_callback.call1(py, (tn.node_id, None::<()>)))
+                    }
+                    TravelEvent::Push(tn, _, key) => {
+                        Python::with_gil(|py| in_stack_callback.call1(py, (tn.node_id, key)))
+                    }
+                    TravelEvent::Pop(tn, _) => {
+                        Python::with_gil(|py| out_stack_callback.call1(py, (tn.node_id,)))
+                    }
                 }
+                .map(|_| ())
             })
         })
     }
@@ -153,14 +158,19 @@ impl Trie {
             if root_state.is_nil() {
                 return Ok(());
             }
-            root_state.bfs_travel(|event| match event {
-                TravelEvent::Push(tn, key_opt) => Python::with_gil(|py| {
-                    in_stack_callback.call1(py, (tn.node_id, key_opt))
-                })
-                .map(|_| ()),
-                TravelEvent::Pop(tn) => {
-                    Python::with_gil(|py| out_stack_callback.call1(py, (tn.node_id,))).map(|_| ())
+            root_state.bfs_travel(|event| {
+                match event {
+                    TravelEvent::PushRoot(tn) => {
+                        Python::with_gil(|py| in_stack_callback.call1(py, (tn.node_id, None::<()>)))
+                    }
+                    TravelEvent::Push(tn, _, key) => {
+                        Python::with_gil(|py| in_stack_callback.call1(py, (tn.node_id, key)))
+                    }
+                    TravelEvent::Pop(tn, _) => {
+                        Python::with_gil(|py| out_stack_callback.call1(py, (tn.node_id,)))
+                    }
                 }
+                .map(|_| ())
             })
         })
     }
