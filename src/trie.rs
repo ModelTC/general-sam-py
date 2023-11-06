@@ -1,15 +1,16 @@
 extern crate general_sam as general_sam_rs;
 
-use crate::utils::{char_or_byte_type, for_both, ByteSide, CharSide};
+use std::{convert::Infallible, str::from_utf8};
 
 use general_sam_rs::{trie as trie_rs, BTreeTransTable, TravelEvent, TrieNodeAlike};
 use pyo3::prelude::*;
-use std::{convert::Infallible, str::from_utf8};
 
-type RustBTreeTrie<T> = trie_rs::Trie<BTreeTransTable<T>>;
-type RustBTreeTrieNode<T> = trie_rs::TrieNode<BTreeTransTable<T>>;
-type RustTrie = char_or_byte_type!(RustBTreeTrie);
-type RustTrieNode = char_or_byte_type!(RustBTreeTrieNode);
+use crate::utils::{char_or_byte_type, for_both, ByteSide, CharSide};
+
+pub(crate) type RustBTreeTrie<T> = trie_rs::Trie<BTreeTransTable<T>>;
+pub(crate) type RustBTreeTrieNode<T> = trie_rs::TrieNode<BTreeTransTable<T>>;
+pub(crate) type RustTrie = char_or_byte_type!(RustBTreeTrie);
+pub(crate) type RustTrieNode = char_or_byte_type!(RustBTreeTrieNode);
 
 #[pyclass]
 pub struct Trie(pub RustTrie);
@@ -79,11 +80,11 @@ impl Trie {
         }
     }
 
-    pub fn insert_bytes(&mut self, b: &[u8]) -> usize {
-        match self.0.as_mut() {
-            CharSide(trie_chars) => trie_chars.insert_iter(from_utf8(b).unwrap().chars()),
+    pub fn insert_bytes(&mut self, b: &[u8]) -> PyResult<usize> {
+        Ok(match self.0.as_mut() {
+            CharSide(trie_chars) => trie_chars.insert_iter(from_utf8(b)?.chars()),
             ByteSide(trie_bytes) => trie_bytes.insert_ref_iter(b.iter()),
-        }
+        })
     }
 
     pub fn get_bfs_order(&self) -> Vec<usize> {

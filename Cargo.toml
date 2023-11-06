@@ -1,6 +1,6 @@
 [package]
 name = "general-sam-py"
-version = "0.5.2-dev"
+version = "0.5.3"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Python bindings for general-sam and some utilities"
@@ -14,10 +14,11 @@ name = "general_sam"
 crate-type = ["cdylib"]
 
 [dependencies]
-general-sam = { version = "0.5.2", features = ["all"] }
+general-sam = { version = "0.5.3", features = ["all"] }
 pyo3 = { version = "0.20.0", features = [
   "extension-module",
   "abi3-py38",
   "generate-import-lib",
 ] }
 either = "1.9.0"
+ouroboros = "0.18.0"

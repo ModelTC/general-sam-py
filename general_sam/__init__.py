@@ -1,6 +1,7 @@
 from .general_sam import (
     GeneralSAM,
     GeneralSAMState,
+    GreedyTokenizer,
     Trie,
     TrieNode,
 )
@@ -21,6 +22,7 @@ from .vocab_prefix import (
 __all__ = [
     'GeneralSAM',
     'GeneralSAMState',
+    'GreedyTokenizer',
     'Trie',
     'TrieNode',
     'CountInfo',
