@@ -4,7 +4,7 @@ from typing import Collection, Sequence, Tuple
 from .general_sam import Trie
 
 
-def construct_trie_from_chars(
+def build_trie_from_chars(
     strings: Collection[str],
 ) -> Tuple[Trie, Sequence[int]]:
     trie = Trie.in_chars()
@@ -12,7 +12,7 @@ def construct_trie_from_chars(
     return trie, node_ids
 
 
-def construct_trie_from_bytes(
+def build_trie_from_bytes(
     strings: Collection[bytes],
 ) -> Tuple[Trie, Sequence[int]]:
     trie = Trie.in_bytes()
@@ -38,12 +38,12 @@ class SortResult:
 
 
 def sort_chars(strings: Collection[str]) -> SortResult:
-    trie, node_ids = construct_trie_from_chars(strings)
+    trie, node_ids = build_trie_from_chars(strings)
     return sort_seq_via_trie(trie, node_ids)
 
 
 def sort_bytes(strings: Collection[bytes]) -> SortResult:
-    trie, node_ids = construct_trie_from_bytes(strings)
+    trie, node_ids = build_trie_from_bytes(strings)
     return sort_seq_via_trie(trie, node_ids)
 
 

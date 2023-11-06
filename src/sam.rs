@@ -3,12 +3,16 @@ extern crate general_sam as general_sam_rs;
 use crate::trie::Trie;
 use crate::utils::{char_or_byte_type, for_both, ByteSide, CharSide};
 
-use general_sam_rs::{sam as sam_rs, trie as trie_rs, trie_alike::TravelEvent};
+use general_sam_rs::{
+    sam as sam_rs, trie as trie_rs, BTreeTransTable, BoxBisectTable, TransitionTable, TravelEvent,
+};
 use pyo3::{prelude::*, types::PyDict};
 use std::{str::from_utf8, sync::Arc};
 
-type RustGeneralSAM = char_or_byte_type!(sam_rs::GeneralSAM);
-type RustGeneralSAMState<'s> = char_or_byte_type!(sam_rs::GeneralSAMState; 's);
+type RustBoxBisectGeneralSAM<T> = sam_rs::GeneralSAM<BoxBisectTable<T>>;
+type RustBoxBisectGeneralSAMState<'s, T> = sam_rs::GeneralSAMState<'s, BoxBisectTable<T>>;
+type RustGeneralSAM = char_or_byte_type!(RustBoxBisectGeneralSAM);
+type RustGeneralSAMState<'s> = char_or_byte_type!(RustBoxBisectGeneralSAMState; 's);
 
 #[pyclass]
 pub struct GeneralSAM(pub Arc<RustGeneralSAM>);
@@ -56,7 +60,7 @@ impl GeneralSAMState {
         for_both!(self.get_state().as_ref(), state => {
             Python::with_gil(|py| {
                 if let Some(node) = state.get_node() {
-                    node.get_trans().clone().into_py(py)
+                    BTreeTransTable::from_kv_iter(node.get_trans().iter()).into_py(py)
                 } else {
                     PyDict::new(py).into_py(py)
                 }
@@ -215,27 +219,30 @@ impl GeneralSAMState {
 #[pymethods]
 impl GeneralSAM {
     #[staticmethod]
-    pub fn construct_from_chars(s: &str) -> Self {
+    pub fn from_chars(s: &str) -> Self {
         GeneralSAM(Arc::new(CharSide(
-            sam_rs::GeneralSAM::construct_from_chars(s.chars()),
+            sam_rs::GeneralSAM::<BTreeTransTable<_>>::from_chars(s.chars())
+                .alter_trans_table_into(),
         )))
     }
 
     #[staticmethod]
-    pub fn construct_from_bytes(s: &[u8]) -> Self {
+    pub fn from_bytes(s: &[u8]) -> Self {
         GeneralSAM(Arc::new(ByteSide(
-            sam_rs::GeneralSAM::construct_from_bytes(s),
+            sam_rs::GeneralSAM::<BTreeTransTable<_>>::from_bytes(s).alter_trans_table_into(),
         )))
     }
 
     #[staticmethod]
-    pub fn construct_from_trie(trie: &Trie) -> Self {
+    pub fn from_trie(trie: &Trie) -> Self {
         match trie.0.as_ref() {
             CharSide(trie_chars) => GeneralSAM(Arc::new(CharSide(
-                sam_rs::GeneralSAM::construct_from_trie(trie_chars.get_root_state()),
+                sam_rs::GeneralSAM::<BTreeTransTable<_>>::from_trie(trie_chars.get_root_state())
+                    .alter_trans_table_into(),
             ))),
             ByteSide(trie_bytes) => GeneralSAM(Arc::new(ByteSide(
-                sam_rs::GeneralSAM::construct_from_trie(trie_bytes.get_root_state()),
+                sam_rs::GeneralSAM::<BTreeTransTable<_>>::from_trie(trie_bytes.get_root_state())
+                    .alter_trans_table_into(),
             ))),
         }
     }

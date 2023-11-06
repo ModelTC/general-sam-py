@@ -2,15 +2,14 @@ extern crate general_sam as general_sam_rs;
 
 use crate::utils::{char_or_byte_type, for_both, ByteSide, CharSide};
 
-use general_sam_rs::{
-    trie as trie_rs,
-    trie_alike::{TravelEvent, TrieNodeAlike},
-};
+use general_sam_rs::{trie as trie_rs, BTreeTransTable, TravelEvent, TrieNodeAlike};
 use pyo3::prelude::*;
 use std::{convert::Infallible, str::from_utf8};
 
-type RustTrie = char_or_byte_type!(trie_rs::Trie);
-type RustTrieNode = char_or_byte_type!(trie_rs::TrieNode);
+type RustBTreeTrie<T> = trie_rs::Trie<BTreeTransTable<T>>;
+type RustBTreeTrieNode<T> = trie_rs::TrieNode<BTreeTransTable<T>>;
+type RustTrie = char_or_byte_type!(RustBTreeTrie);
+type RustTrieNode = char_or_byte_type!(RustBTreeTrieNode);
 
 #[pyclass]
 pub struct Trie(pub RustTrie);
