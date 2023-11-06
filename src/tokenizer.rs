@@ -64,26 +64,20 @@ impl GreedyTokenizer {
             })
     }
 
-    #[pyo3(signature = (s, unk_token_id=None))]
-    pub fn tokenize_str(
-        &mut self,
-        s: &str,
-        unk_token_id: Option<TrieNodeID>,
-    ) -> Vec<(TrieNodeID, usize)> {
-        let unk_token_id = unk_token_id.unwrap_or(TRIE_NIL_NODE_ID);
+    #[pyo3(signature = (s, unk_token_id=TRIE_NIL_NODE_ID))]
+    pub fn tokenize_str(&mut self, s: &str, unk_token_id: TrieNodeID) -> Vec<(TrieNodeID, usize)> {
         match self.0.borrow_inner() {
             CharSide(inner) => inner.tokenize(s.chars(), &unk_token_id),
             ByteSide(inner) => inner.tokenize(s.bytes(), &unk_token_id),
         }
     }
 
-    #[pyo3(signature = (s, unk_token_id=None))]
+    #[pyo3(signature = (s, unk_token_id=TRIE_NIL_NODE_ID))]
     pub fn tokenize_bytes(
         &mut self,
         s: &[u8],
-        unk_token_id: Option<TrieNodeID>,
+        unk_token_id: TrieNodeID,
     ) -> PyResult<Vec<(TrieNodeID, usize)>> {
-        let unk_token_id = unk_token_id.unwrap_or(TRIE_NIL_NODE_ID);
         Ok(match self.0.borrow_inner() {
             CharSide(inner) => inner.tokenize(from_utf8(s)?.chars(), &unk_token_id),
             ByteSide(inner) => inner.tokenize(s.iter().copied(), &unk_token_id),
