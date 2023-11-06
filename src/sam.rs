@@ -1,18 +1,24 @@
 extern crate general_sam as general_sam_rs;
 
-use crate::trie::Trie;
-use crate::utils::{char_or_byte_type, for_both, ByteSide, CharSide};
+use std::{str::from_utf8, sync::Arc};
 
 use general_sam_rs::{
     sam as sam_rs, trie as trie_rs, BTreeTransTable, BoxBisectTable, TransitionTable, TravelEvent,
 };
+use pyo3::exceptions::PyTypeError;
 use pyo3::{prelude::*, types::PyDict};
-use std::{str::from_utf8, sync::Arc};
 
-type RustBoxBisectGeneralSAM<T> = sam_rs::GeneralSAM<BoxBisectTable<T>>;
-type RustBoxBisectGeneralSAMState<'s, T> = sam_rs::GeneralSAMState<'s, BoxBisectTable<T>>;
-type RustGeneralSAM = char_or_byte_type!(RustBoxBisectGeneralSAM);
-type RustGeneralSAMState<'s> = char_or_byte_type!(RustBoxBisectGeneralSAMState; 's);
+use crate::for_both_and_wrap;
+use crate::trie::Trie;
+use crate::utils::{
+    char_or_byte_type, for_both, get_char_or_byte_variant_name, ByteSide, CharSide,
+};
+
+pub(crate) type RustBoxBisectGeneralSAM<T> = sam_rs::GeneralSAM<BoxBisectTable<T>>;
+pub(crate) type RustBoxBisectGeneralSAMState<'s, T> =
+    sam_rs::GeneralSAMState<'s, BoxBisectTable<T>>;
+pub(crate) type RustGeneralSAM = char_or_byte_type!(RustBoxBisectGeneralSAM);
+pub(crate) type RustGeneralSAMState<'s> = char_or_byte_type!(RustBoxBisectGeneralSAMState; 's);
 
 #[pyclass]
 pub struct GeneralSAM(pub Arc<RustGeneralSAM>);
@@ -112,10 +118,10 @@ impl GeneralSAMState {
         }
     }
 
-    pub fn feed_bytes(&mut self, s: &[u8]) {
+    pub fn feed_bytes(&mut self, s: &[u8]) -> PyResult<()> {
         match self.get_state() {
             CharSide(state_chars) => {
-                let state_chars = state_chars.feed_iter(from_utf8(s).unwrap().chars());
+                let state_chars = state_chars.feed_iter(from_utf8(s)?.chars());
                 self.1 = state_chars.node_id;
             }
             ByteSide(state_bytes) => {
@@ -123,6 +129,7 @@ impl GeneralSAMState {
                 self.1 = state_bytes.node_id;
             }
         }
+        Ok(())
     }
 
     #[pyo3(signature = (trie, in_stack_callback, out_stack_callback, trie_node_id=None))]
@@ -132,12 +139,16 @@ impl GeneralSAMState {
         in_stack_callback: PyObject,
         out_stack_callback: PyObject,
         trie_node_id: Option<usize>,
-    ) -> Result<(), PyErr> {
-        assert!(trie.is_in_chars() == self.is_in_chars());
-        let sam_state_and_trie = self.get_state().map_either(
-            |x| (x, trie.0.as_ref().left().unwrap()),
-            |x| (x, trie.0.as_ref().right().unwrap()),
-        );
+    ) -> PyResult<()> {
+        let sam_state_and_trie = for_both_and_wrap!(self.get_state(), &trie.0; (s, t) => (s, t))
+            .map_err(|e| {
+                PyTypeError::new_err(format!(
+                    "{}, {} vs {}",
+                    e,
+                    get_char_or_byte_variant_name(self.0.as_ref()),
+                    get_char_or_byte_variant_name(&trie.0)
+                ))
+            })?;
         for_both!(sam_state_and_trie, (sam_state, trie) => {
             let tn = trie.get_state(trie_node_id.unwrap_or(trie_rs::TRIE_ROOT_NODE_ID));
             sam_state.dfs_along(tn, |event| {
@@ -178,11 +189,15 @@ impl GeneralSAMState {
         out_stack_callback: PyObject,
         trie_node_id: Option<usize>,
     ) -> Result<(), PyErr> {
-        assert!(trie.is_in_chars() == self.is_in_chars());
-        let sam_state_and_trie = self.get_state().map_either(
-            |x| (x, trie.0.as_ref().left().unwrap()),
-            |x| (x, trie.0.as_ref().right().unwrap()),
-        );
+        let sam_state_and_trie = for_both_and_wrap!(self.get_state(), &trie.0; (s, t) => (s, t))
+            .map_err(|e| {
+                PyTypeError::new_err(format!(
+                    "{}, {} vs {}",
+                    e,
+                    get_char_or_byte_variant_name(self.0.as_ref()),
+                    get_char_or_byte_variant_name(&trie.0)
+                ))
+            })?;
         for_both!(sam_state_and_trie, (sam_state, trie) => {
             let tn = trie.get_state(trie_node_id.unwrap_or(trie_rs::TRIE_ROOT_NODE_ID));
             sam_state.bfs_along(tn, |event| {
