@@ -45,7 +45,7 @@ pip install general-sam
 from general_sam import GeneralSAM
 
 
-sam = GeneralSAM.construct_from_bytes(b'abcbc')
+sam = GeneralSAM.from_bytes(b'abcbc')
 
 # "cbc" is a suffix of "abcbc"
 state = sam.get_root_state()
@@ -62,7 +62,7 @@ assert not state.is_accepting()
 from general_sam import GeneralSAM
 
 
-sam = GeneralSAM.construct_from_chars('abcbc')
+sam = GeneralSAM.from_chars('abcbc')
 state = sam.get_root_state()
 
 # "b" is not a suffix but at least a substring of "abcbc"
@@ -83,11 +83,11 @@ assert not state.is_accepting() and state.is_nil()
 ```
 
 ```python
-from general_sam import GeneralSAM, GeneralSAMState, construct_trie_from_chars
+from general_sam import GeneralSAM, GeneralSAMState, build_trie_from_chars
 
 
-trie, _ = construct_trie_from_chars(['hello', 'Chielo'])
-sam = GeneralSAM.construct_from_trie(trie)
+trie, _ = build_trie_from_chars(['hello', 'Chielo'])
+sam = GeneralSAM.from_trie(trie)
 
 def fetch_state(s: str) -> GeneralSAMState:
     state = sam.get_root_state()

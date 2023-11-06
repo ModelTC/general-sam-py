@@ -15,8 +15,8 @@ from .general_sam import GeneralSAM, GeneralSAMState, Trie
 from .trie_utils import (
     CountInfo,
     SortResult,
-    construct_trie_from_bytes,
-    construct_trie_from_chars,
+    build_trie_from_bytes,
+    build_trie_from_chars,
     sort_bytes,
     sort_chars,
 )
@@ -53,17 +53,17 @@ class VocabPrefixAutomaton(object):
 
         self.vocab_rev: Sequence[Union[str, bytes]] = list(s[::-1] for s in vocab)
 
-        sort_seq, construct_trie = {
-            VocabPrefixBytesOrChars.BYTES: (sort_bytes, construct_trie_from_bytes),
-            VocabPrefixBytesOrChars.CHARS: (sort_chars, construct_trie_from_chars),
+        sort_seq, trie_builder = {
+            VocabPrefixBytesOrChars.BYTES: (sort_bytes, build_trie_from_bytes),
+            VocabPrefixBytesOrChars.CHARS: (sort_chars, build_trie_from_chars),
         }[self.bytes_or_chars]
         self.vocab_sort_res = cast(SortResult, sort_seq(self.vocab))
         self.trie_rev, self.trie_rev_node_ids = cast(
             Tuple[Trie, Sequence[int]],
-            construct_trie(self.vocab_rev),
+            trie_builder(self.vocab_rev),
         )
 
-        self.sam_rev = GeneralSAM.construct_from_trie(self.trie_rev)
+        self.sam_rev = GeneralSAM.from_trie(self.trie_rev)
         self._gen_cnt_info_in_sam()
 
     @property

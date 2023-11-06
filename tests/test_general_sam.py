@@ -1,8 +1,8 @@
-from general_sam import GeneralSAM, GeneralSAMState, construct_trie_from_chars
+from general_sam import GeneralSAM, GeneralSAMState, build_trie_from_chars
 
 
 def test_bytes_abcbc():
-    sam = GeneralSAM.construct_from_bytes(b'abcbc')
+    sam = GeneralSAM.from_bytes(b'abcbc')
 
     state = sam.get_root_state()
     state.feed_bytes(b'cbc')
@@ -14,7 +14,7 @@ def test_bytes_abcbc():
 
 
 def test_chars_abcbc():
-    sam = GeneralSAM.construct_from_chars('abcbc')
+    sam = GeneralSAM.from_chars('abcbc')
     state = sam.get_root_state()
 
     state.feed_chars('b')
@@ -28,8 +28,8 @@ def test_chars_abcbc():
 
 
 def test_simple_sam_from_trie():
-    trie, _ = construct_trie_from_chars(['hello', 'Chielo'])
-    sam = GeneralSAM.construct_from_trie(trie)
+    trie, _ = build_trie_from_chars(['hello', 'Chielo'])
+    sam = GeneralSAM.from_trie(trie)
 
     def fetch_state(s: str) -> GeneralSAMState:
         state = sam.get_root_state()
