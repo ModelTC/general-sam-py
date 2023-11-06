@@ -38,6 +38,18 @@ pub struct GreedyTokenizer(pub Arc<SharedGreedyTokenizer>);
 
 #[pymethods]
 impl GreedyTokenizer {
+    pub fn get_sam(&self) -> GeneralSAM {
+        GeneralSAM(self.0.borrow_sam().0.clone())
+    }
+
+    pub fn is_in_chars(&self) -> bool {
+        self.0.borrow_sam().is_in_chars()
+    }
+
+    pub fn is_in_bytes(&self) -> bool {
+        self.0.borrow_sam().is_in_bytes()
+    }
+
     #[staticmethod]
     pub fn from_sam_and_trie(sam: &GeneralSAM, trie: &Trie) -> PyResult<Self> {
         SharedGreedyTokenizer::from_sam_and_trie(sam, trie)
