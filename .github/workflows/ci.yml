@@ -15,10 +15,12 @@ permissions:
 
 jobs:
   format:
-    name: Check format
+    name: Check Python format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v4
       - name: Install dependencies
@@ -27,6 +29,17 @@ jobs:
         run: ruff check .
       - name: Black
         run: black --check --diff .
+
+  rustfmt:
+    name: Check Rust format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: rustup update stable && rustup default stable
+      - run: rustup component add rustfmt
+      - run: cargo fmt --all --check
 
   test:
     name: Run tests
@@ -37,6 +50,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -63,6 +78,8 @@ jobs:
         target: [x86_64, aarch64, armv7]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
@@ -83,9 +100,8 @@ jobs:
         shell: bash
         run: |
           set -e
-          pip install general_sam --find-links dist --force-reinstall
-          pip install pytest
-          pytest
+          pip install --pre "general_sam[test]" --find-links dist --force-reinstall
+          pytest --import-mode=importlib
       - name: pytest
         if: ${{ !startsWith(matrix.target, 'x86') && matrix.target != 'ppc64' }}
         uses: uraimo/run-on-arch-action@v2.5.1
@@ -96,11 +112,11 @@ jobs:
           install: |
             apt-get update
             apt-get install -y --no-install-recommends python3 python3-pip
-            pip3 install -U pip pytest
+            pip3 install -U pip
           run: |
             set -e
-            pip3 install general_sam --find-links dist --force-reinstall
-            pytest
+            pip3 install --pre "general_sam[test]" --find-links dist --force-reinstall
+            pytest --import-mode=importlib
 
   windows:
     runs-on: windows-latest
@@ -109,6 +125,8 @@ jobs:
         target: [x64]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
@@ -129,9 +147,8 @@ jobs:
         shell: bash
         run: |
           set -e
-          pip install general_sam --find-links dist --force-reinstall
-          pip install pytest
-          pytest
+          pip install --pre "general_sam[test]" --find-links dist --force-reinstall
+          pytest --import-mode=importlib
 
   macos:
     runs-on: macos-latest
@@ -140,6 +157,8 @@ jobs:
         target: [x86_64, aarch64]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
@@ -159,15 +178,16 @@ jobs:
         shell: bash
         run: |
           set -e
-          pip install general_sam --find-links dist --force-reinstall
-          pip install pytest
-          pytest
+          pip install --pre "general_sam[test]" --find-links dist --force-reinstall
+          pytest --import-mode=importlib
 
   sdist:
     needs: [test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
@@ -183,7 +203,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     if: "startsWith(github.ref, 'refs/tags/')"
-    needs: [test, linux, windows, macos, sdist]
+    needs: [test, format, rustfmt, linux, windows, macos, sdist]
     permissions:
       # Used to upload release artifacts
       contents: write
