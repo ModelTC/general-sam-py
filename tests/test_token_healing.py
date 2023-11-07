@@ -44,7 +44,7 @@ def _test_token_healing_batch(
 
     def check(tokens: Sequence[Union[str, bytes]]):
         state = automaton.get_root_state()
-        query = '' if isinstance(tokens[0], str) else b''
+        query = "" if isinstance(tokens[0], str) else b""
 
         # NOTE: tokens are prepended in the reverse order
         for token in reversed(tokens):
@@ -77,45 +77,45 @@ def _test_batch(
 
 def test_simple_token_healing():
     _test_batch(
-        ['bb', 'ca', 'ab', 'c', 'aa', 'bbaa', 'a', 'cc', 'b'],
+        ["bb", "ca", "ab", "c", "aa", "bbaa", "a", "cc", "b"],
         [
-            ['bb', 'a'],
-            ['b', 'b', 'b'],
-            ['b', 'b', 'a'],
-            ['b', 'ba'],
-            ['ca', 'c', 'ab'],
-            ['c', 'c', 'c'],
+            ["bb", "a"],
+            ["b", "b", "b"],
+            ["b", "b", "a"],
+            ["b", "ba"],
+            ["ca", "c", "ab"],
+            ["c", "c", "c"],
         ],
     )
 
 
 def test_simple_chinese_token_healing():
     _test_batch(
-        ['歌曲', '聆听歌曲', '播放歌曲', '歌词', '查看歌词'],
+        ["歌曲", "聆听歌曲", "播放歌曲", "歌词", "查看歌词"],
         [
-            ['歌曲'],
-            ['聆听歌曲'],
-            ['聆听', '歌曲'],
-            ['聆', '听', '歌曲'],
-            ['播放歌曲'],
-            ['播', '放歌曲'],
-            ['播放', '歌曲'],
-            ['歌词'],
-            ['查看歌词'],
-            ['查看', '歌词'],
-            ['听歌曲'],
-            ['听', '歌曲'],
-            ['放歌曲'],
-            ['听歌'],
-            ['放歌'],
-            ['词'],
-            ['查看'],
-            ['bb', 'a'],
-            ['b', 'b', 'b'],
-            ['b', 'b', 'a'],
-            ['b', 'ba'],
-            ['ca', 'c', 'ab'],
-            ['c', 'c', 'c'],
+            ["歌曲"],
+            ["聆听歌曲"],
+            ["聆听", "歌曲"],
+            ["聆", "听", "歌曲"],
+            ["播放歌曲"],
+            ["播", "放歌曲"],
+            ["播放", "歌曲"],
+            ["歌词"],
+            ["查看歌词"],
+            ["查看", "歌词"],
+            ["听歌曲"],
+            ["听", "歌曲"],
+            ["放歌曲"],
+            ["听歌"],
+            ["放歌"],
+            ["词"],
+            ["查看"],
+            ["bb", "a"],
+            ["b", "b", "b"],
+            ["b", "b", "a"],
+            ["b", "ba"],
+            ["ca", "c", "ab"],
+            ["c", "c", "c"],
         ],
     )
 
@@ -123,12 +123,12 @@ def test_simple_chinese_token_healing():
 def test_simple_utf8_token_healing():
     # '䨻'.encode('utf8') == b'\xe4\xa8\xbb'
     _test_batch(
-        ['䨻'],
+        ["䨻"],
         [
-            ['䨻'],
-            [b'\xe4', b'\xa8', b'\xbb'],
-            [b'\xe4', b'\xa8\xbb'],
-            [b'\xe4\xa8', b'\xbb'],
-            [b'\xe4\xa8\xbb'],
+            ["䨻"],
+            [b"\xe4", b"\xa8", b"\xbb"],
+            [b"\xe4", b"\xa8\xbb"],
+            [b"\xe4\xa8", b"\xbb"],
+            [b"\xe4\xa8\xbb"],
         ],
     )
