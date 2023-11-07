@@ -71,3 +71,6 @@ docs/_build/
 
 # Pyenv
 .python-version
+
+# pytest-readme
+test_readme.py
