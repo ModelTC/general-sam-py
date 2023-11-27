@@ -5,7 +5,10 @@ use std::{convert::Infallible, str::from_utf8};
 use general_sam_rs::{trie as trie_rs, BTreeTransTable, TravelEvent, TrieNodeAlike};
 use pyo3::prelude::*;
 
-use crate::utils::{char_or_byte_type, for_both, ByteSide, CharSide};
+use crate::{
+    for_both_with_side,
+    utils::{char_or_byte_type, for_both, ByteSide, CharSide},
+};
 
 pub(crate) type RustBTreeTrie<T> = trie_rs::Trie<BTreeTransTable<T>>;
 pub(crate) type RustBTreeTrieNode<T> = trie_rs::TrieNode<BTreeTransTable<T>>;
@@ -38,9 +41,7 @@ impl TrieNode {
 
     pub fn get_trans(&self) -> PyObject {
         for_both!(self.1.as_ref(), x => {
-            Python::with_gil(|py| {
-                x.get_trans().clone().into_py(py)
-            })
+            Python::with_gil(|py| x.get_trans().clone().into_py(py))
         })
     }
 
@@ -107,14 +108,10 @@ impl Trie {
     }
 
     pub fn get_node(&self, node_id: usize) -> Option<TrieNode> {
-        match self.0.as_ref() {
-            CharSide(trie) => trie
-                .get_node(node_id)
-                .map(|node| TrieNode(node_id, CharSide(node.clone()))),
-            ByteSide(trie) => trie
-                .get_node(node_id)
-                .map(|node| TrieNode(node_id, ByteSide(node.clone()))),
-        }
+        for_both_with_side!(self.0.as_ref(), side, trie => {
+            trie.get_node(node_id)
+                .map(|node| TrieNode(node_id, side(node.clone())))
+        })
     }
 
     #[pyo3(signature = (in_stack_callback, out_stack_callback, root_node_id=None))]
