@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
       - name: Install dependencies
         run: pip install ruff black
       - name: Ruff
@@ -91,9 +91,9 @@ jobs:
           sccache: true
           manylinux: auto
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-linux-${{ matrix.target }}
           path: dist
       - name: pytest
         if: ${{ startsWith(matrix.target, 'x86_64') }}
@@ -104,7 +104,7 @@ jobs:
           pytest --import-mode=importlib
       - name: pytest
         if: ${{ !startsWith(matrix.target, 'x86') && matrix.target != 'ppc64' }}
-        uses: uraimo/run-on-arch-action@v2.6.0
+        uses: uraimo/run-on-arch-action@v2.7.1
         with:
           arch: ${{ matrix.target }}
           distro: ubuntu22.04
@@ -138,9 +138,9 @@ jobs:
           args: --release --out dist --interpreter 3.8 pypy3.8 pypy3.9 pypy3.10
           sccache: true
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-windows-${{ matrix.target }}
           path: dist
       - name: pytest
         if: ${{ !startsWith(matrix.target, 'aarch64') }}
@@ -169,9 +169,9 @@ jobs:
           args: --release --out dist --interpreter 3.8 pypy3.8 pypy3.9 pypy3.10
           sccache: true
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-macos-${{ matrix.target }}
           path: dist
       - name: pytest
         if: ${{ !startsWith(matrix.target, 'aarch64') }}
@@ -194,9 +194,9 @@ jobs:
           command: sdist
           args: --out dist
       - name: Upload sdist
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-sdist
           path: dist
 
   release:
@@ -208,9 +208,10 @@ jobs:
       # Used to upload release artifacts
       contents: write
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: wheels
+          pattern: wheels-*
+          merge-multiple: true
       - name: Publish to PyPI
         uses: PyO3/maturin-action@v1
         env:
