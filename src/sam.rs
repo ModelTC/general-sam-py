@@ -243,10 +243,10 @@ impl GeneralSAM {
         GeneralSAMState(for_both_with_side!(
             self.0.as_ref(),
             side,
-            x => side(RustBoxBisectGeneralSAMState {
-                sam: x.clone(),
-                node_id: SAM_ROOT_NODE_ID,
-            })
+            x => side(RustBoxBisectGeneralSAMState::new(
+                x.clone(),
+                SAM_ROOT_NODE_ID,
+            )),
         ))
     }
 
@@ -254,10 +254,7 @@ impl GeneralSAM {
         GeneralSAMState(for_both_with_side!(
             self.0.as_ref(),
             side,
-            x => side(RustBoxBisectGeneralSAMState {
-                sam: x.clone(),
-                node_id,
-            })
+            x => side(RustBoxBisectGeneralSAMState::new(x.clone(), node_id)),
         ))
     }
 

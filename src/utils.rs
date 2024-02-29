@@ -53,6 +53,9 @@ macro_rules! for_both_with_side {
             }
         }
     };
+    ($value:expr, $side:ident, $pattern:pat => $result:expr,) => {
+        for_both_with_side!($value, $side, $pattern => $result)
+    }
 }
 
 pub use for_both_with_side;
