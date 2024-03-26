@@ -60,7 +60,7 @@ impl GeneralSAMState {
                 if let Some(node) = state.get_node() {
                     BTreeTransTable::from_kv_iter(node.get_trans().iter()).into_py(py)
                 } else {
-                    PyDict::new(py).into_py(py)
+                    PyDict::new_bound(py).into_py(py)
                 }
             })
         })

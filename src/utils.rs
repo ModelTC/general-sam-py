@@ -37,8 +37,6 @@ macro_rules! for_both_and_wrap {
     }
 }
 
-pub use for_both_and_wrap;
-
 #[macro_export]
 macro_rules! for_both_with_side {
     ($value:expr, $side:ident, $pattern:pat => $result:expr) => {
@@ -57,8 +55,6 @@ macro_rules! for_both_with_side {
         for_both_with_side!($value, $side, $pattern => $result)
     }
 }
-
-pub use for_both_with_side;
 
 pub fn get_char_or_byte_variant_name<L, R>(e: &CharOrByte<L, R>) -> &str {
     match e {
