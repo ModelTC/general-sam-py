@@ -5,13 +5,13 @@ use pyo3::{exceptions::PyTypeError, prelude::*};
 
 use crate::{
     char_or_byte_type, for_both_and_wrap, for_both_with_side,
-    sam::{GeneralSAM, RustBoxBisectGeneralSAM},
+    sam::{GeneralSam, RustBoxBisectGeneralSam},
     trie::Trie,
     utils::{get_char_or_byte_variant_name, ByteSide, CharSide},
 };
 
 pub(crate) type RustBoxBisectGreedyTokenizer<T> =
-    tokenize_rs::GreedyTokenizer<BoxBisectTable<T>, TrieNodeID, RustBoxBisectGeneralSAM<T>>;
+    tokenize_rs::GreedyTokenizer<BoxBisectTable<T>, TrieNodeID, RustBoxBisectGeneralSam<T>>;
 pub(crate) type RustGreedyTokenizer = char_or_byte_type!(RustBoxBisectGreedyTokenizer);
 
 #[pyclass]
@@ -20,7 +20,7 @@ pub struct GreedyTokenizer(pub Arc<RustGreedyTokenizer>);
 #[pymethods]
 impl GreedyTokenizer {
     #[staticmethod]
-    pub fn from_sam_and_trie(sam: &GeneralSAM, trie: &Trie) -> PyResult<Self> {
+    pub fn from_sam_and_trie(sam: &GeneralSam, trie: &Trie) -> PyResult<Self> {
         Ok(Self(Arc::new(
             for_both_and_wrap!(sam.0.as_ref(), trie.0.as_ref(); (sam, trie) => {
                 RustBoxBisectGreedyTokenizer::build_from_trie(sam.clone(), trie.get_root_state())
@@ -36,9 +36,9 @@ impl GreedyTokenizer {
         )))
     }
 
-    pub fn get_sam(&self) -> GeneralSAM {
+    pub fn get_sam(&self) -> GeneralSam {
         for_both_with_side!(self.0.as_ref(), side, x => {
-            GeneralSAM(side(x.get_sam().clone()))
+            GeneralSam(side(x.get_sam().clone()))
         })
     }
 

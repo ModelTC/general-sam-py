@@ -76,15 +76,15 @@ impl Trie {
 
     pub fn insert_chars(&mut self, s: &str) -> usize {
         match self.0.as_mut() {
-            CharSide(trie_chars) => trie_chars.insert_iter(s.chars()),
-            ByteSide(trie_bytes) => trie_bytes.insert_ref_iter(s.as_bytes().iter()),
+            CharSide(trie_chars) => trie_chars.insert_chars(s),
+            ByteSide(trie_bytes) => trie_bytes.insert_bytes(s.as_bytes()),
         }
     }
 
     pub fn insert_bytes(&mut self, b: &[u8]) -> PyResult<usize> {
         Ok(match self.0.as_mut() {
-            CharSide(trie_chars) => trie_chars.insert_iter(from_utf8(b)?.chars()),
-            ByteSide(trie_bytes) => trie_bytes.insert_ref_iter(b.iter()),
+            CharSide(trie_chars) => trie_chars.insert_chars(from_utf8(b)?),
+            ByteSide(trie_bytes) => trie_bytes.insert_bytes(b),
         })
     }
 

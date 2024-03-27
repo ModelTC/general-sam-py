@@ -11,7 +11,7 @@ from typing import (
     cast,
 )
 
-from .general_sam import GeneralSAM, GeneralSAMState, Trie
+from .general_sam import GeneralSam, GeneralSamState, Trie
 from .trie_utils import (
     CountInfo,
     SortResult,
@@ -63,14 +63,14 @@ class VocabPrefixAutomaton(object):
             trie_builder(self.vocab_rev),
         )
 
-        self.sam_rev = GeneralSAM.from_trie(self.trie_rev)
+        self.sam_rev = GeneralSam.from_trie(self.trie_rev)
         self._gen_cnt_info_in_sam()
 
     @property
-    def _state_feed_fn(self) -> Callable[[GeneralSAMState, Union[bytes, str]], None]:
+    def _state_feed_fn(self) -> Callable[[GeneralSamState, Union[bytes, str]], None]:
         return {
-            VocabPrefixBytesOrChars.BYTES: GeneralSAMState.feed_bytes,
-            VocabPrefixBytesOrChars.CHARS: GeneralSAMState.feed_chars,
+            VocabPrefixBytesOrChars.BYTES: GeneralSamState.feed_bytes,
+            VocabPrefixBytesOrChars.CHARS: GeneralSamState.feed_chars,
         }[self.bytes_or_chars]
 
     def _gen_cnt_info_in_sam(self):
@@ -127,11 +127,11 @@ class VocabPrefixAutomaton(object):
             assert link_cnt_info.tot_cnt_lower <= state_cnt_info.tot_cnt_lower
             assert link_cnt_info.tot_cnt_upper >= state_cnt_info.tot_cnt_upper
 
-    def get_root_state(self) -> GeneralSAMState:
+    def get_root_state(self) -> GeneralSamState:
         return self.sam_rev.get_root_state()
 
     def prepend_feed(
-        self, state: GeneralSAMState, token: Union[str, bytes]
+        self, state: GeneralSamState, token: Union[str, bytes]
     ) -> Optional[CountInfo]:
         if self.bytes_or_chars == VocabPrefixBytesOrChars.BYTES and isinstance(
             token, str

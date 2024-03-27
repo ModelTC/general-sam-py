@@ -34,16 +34,16 @@ checksum = "11157ac094ffbdde99aa67b23417ebdd801842852b500e395a45a9c0aac03e4a"
 
 [[package]]
 name = "general-sam"
-version = "0.7.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8a86c25dd766dea0274064c37929558fecda8fc9b231475892c8e8b5f44ed8d"
+checksum = "b24ea6ac8cb305d7066d4c3e4587a5541f40124118367be09a10ea37898b8fc4"
 dependencies = [
  "rand",
 ]
 
 [[package]]
 name = "general-sam-py"
-version = "0.7.0-post0"
+version = "1.0.0"
 dependencies = [
  "either",
  "general-sam",
@@ -91,9 +91,9 @@ dependencies = [
 
 [[package]]
 name = "memoffset"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a634b1c61a95585bd15607c6ab0c4e5b226e695ff2800ba0cdccddf208c406c"
+checksum = "488016bfae457b036d996092f6cb448677611ce4449e970ceaf42695203f218a"
 dependencies = [
  "autocfg",
 ]

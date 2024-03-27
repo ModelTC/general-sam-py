@@ -2,7 +2,7 @@ from typing import Collection, Iterable, Optional, Sequence, Union
 
 from general_sam import (
     CountInfo,
-    GeneralSAMState,
+    GeneralSamState,
     VocabPrefixAutomaton,
     VocabPrefixBytesOrChars,
 )
@@ -18,7 +18,7 @@ def _test_token_healing_batch(
     vocab_sorted = sorted(vocab)
 
     def validate(
-        query: Union[str, bytes], state: GeneralSAMState, cnt_info: Optional[CountInfo]
+        query: Union[str, bytes], state: GeneralSamState, cnt_info: Optional[CountInfo]
     ):
         import bisect
 

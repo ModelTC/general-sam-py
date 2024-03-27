@@ -1,5 +1,5 @@
 from general_sam import (
-    GeneralSAM,
+    GeneralSam,
     GreedyTokenizer,
     build_trie_from_bytes,
     build_trie_from_chars,
@@ -14,7 +14,7 @@ def test_english_chars_tokenize():
     for i, j in enumerate(token_to_trie_node):
         trie_node_to_token[j] = i
 
-    sam = GeneralSAM.from_trie(trie)
+    sam = GeneralSam.from_trie(trie)
     tokenizer = GreedyTokenizer.from_sam_and_trie(sam, trie)
     assert tokenizer.is_in_chars()
 
@@ -34,7 +34,7 @@ def test_chinese_chars_tokenize():
     for i, j in enumerate(token_to_trie_node):
         trie_node_to_token[j] = i
 
-    sam = GeneralSAM.from_trie(trie)
+    sam = GeneralSam.from_trie(trie)
     tokenizer = GreedyTokenizer.from_sam_and_trie(sam, trie)
     assert tokenizer.is_in_chars()
 
@@ -58,7 +58,7 @@ def test_chinese_bytes_tokenize():
     for i, j in enumerate(token_to_trie_node):
         trie_node_to_token[j] = i
 
-    sam = GeneralSAM.from_trie(trie)
+    sam = GeneralSam.from_trie(trie)
     tokenizer = GreedyTokenizer.from_sam_and_trie(sam, trie)
     assert tokenizer.is_in_bytes()
 

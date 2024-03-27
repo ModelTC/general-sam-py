@@ -15,21 +15,21 @@ use crate::utils::{
 };
 use crate::{for_both_and_wrap, for_both_with_side};
 
-pub(crate) type RustBoxBisectGeneralSAM<T> = Arc<sam_rs::GeneralSAM<BoxBisectTable<T>>>;
-pub(crate) type RustBoxBisectGeneralSAMState<T> =
-    sam_rs::GeneralSAMState<BoxBisectTable<T>, RustBoxBisectGeneralSAM<T>>;
-pub(crate) type RustGeneralSAM = char_or_byte_type!(RustBoxBisectGeneralSAM);
-pub(crate) type RustGeneralSAMState = char_or_byte_type!(RustBoxBisectGeneralSAMState);
+pub(crate) type RustBoxBisectGeneralSam<T> = Arc<sam_rs::GeneralSam<BoxBisectTable<T>>>;
+pub(crate) type RustBoxBisectGeneralSamState<T> =
+    sam_rs::GeneralSamState<BoxBisectTable<T>, RustBoxBisectGeneralSam<T>>;
+pub(crate) type RustGeneralSam = char_or_byte_type!(RustBoxBisectGeneralSam);
+pub(crate) type RustGeneralSamState = char_or_byte_type!(RustBoxBisectGeneralSamState);
 
 #[pyclass]
-pub struct GeneralSAM(pub RustGeneralSAM);
+pub struct GeneralSam(pub RustGeneralSam);
 
 #[pyclass]
 #[derive(Clone)]
-pub struct GeneralSAMState(pub RustGeneralSAMState);
+pub struct GeneralSamState(pub RustGeneralSamState);
 
 #[pymethods]
-impl GeneralSAMState {
+impl GeneralSamState {
     pub fn is_in_chars(&self) -> bool {
         self.0.is_left()
     }
@@ -74,6 +74,7 @@ impl GeneralSAMState {
         })
     }
 
+    #[pyo3(name = "clone")]
     pub fn copy(&self) -> Self {
         self.clone()
     }
@@ -97,10 +98,10 @@ impl GeneralSAMState {
     pub fn feed_chars(&mut self, s: &str) {
         match self.0.as_mut() {
             CharSide(state_chars) => {
-                *state_chars = state_chars.clone().feed_chars(s);
+                state_chars.feed_chars(s);
             }
             ByteSide(state_bytes) => {
-                *state_bytes = state_bytes.clone().feed_ref_iter(s.as_bytes().iter());
+                state_bytes.feed_bytes(s.as_bytes());
             }
         }
     }
@@ -108,10 +109,10 @@ impl GeneralSAMState {
     pub fn feed_bytes(&mut self, s: &[u8]) -> PyResult<()> {
         match self.0.as_mut() {
             CharSide(state_chars) => {
-                *state_chars = state_chars.clone().feed_iter(from_utf8(s)?.chars());
+                state_chars.feed(from_utf8(s)?.chars());
             }
             ByteSide(state_bytes) => {
-                *state_bytes = state_bytes.clone().feed_ref_iter(s.iter());
+                state_bytes.feed_bytes(s);
             }
         }
         Ok(())
@@ -141,16 +142,16 @@ impl GeneralSAMState {
                     TravelEvent::PushRoot((st, tn)) => Python::with_gil(|py| {
                         in_stack_callback.call1(
                             py,
-                            (GeneralSAMState(side(st.clone())), tn.node_id, None::<()>),
+                            (GeneralSamState(side(st.clone())), tn.node_id, None::<()>),
                         )
                     }),
                     TravelEvent::Push((st, tn), _, key) => Python::with_gil(|py| {
                         in_stack_callback
-                            .call1(py, (GeneralSAMState(side(st.clone())), tn.node_id, key))
+                            .call1(py, (GeneralSamState(side(st.clone())), tn.node_id, key))
                     }),
                     TravelEvent::Pop((st, tn), _) => Python::with_gil(|py| {
                         out_stack_callback
-                            .call1(py, (GeneralSAMState(side(st.clone())), tn.node_id))
+                            .call1(py, (GeneralSamState(side(st.clone())), tn.node_id))
                     }),
                 }
                 .map(|_| ())
@@ -182,16 +183,16 @@ impl GeneralSAMState {
                     TravelEvent::PushRoot((st, tn)) => Python::with_gil(|py| {
                         in_stack_callback.call1(
                             py,
-                            (GeneralSAMState(side(st.clone())), tn.node_id, None::<()>),
+                            (GeneralSamState(side(st.clone())), tn.node_id, None::<()>),
                         )
                     }),
                     TravelEvent::Push((st, tn), _, key) => Python::with_gil(|py| {
                         in_stack_callback
-                            .call1(py, (GeneralSAMState(side(st.clone())), tn.node_id, key))
+                            .call1(py, (GeneralSamState(side(st.clone())), tn.node_id, key))
                     }),
                     TravelEvent::Pop((st, tn), _) => Python::with_gil(|py| {
                         out_stack_callback
-                            .call1(py, (GeneralSAMState(side(st.clone())), tn.node_id))
+                            .call1(py, (GeneralSamState(side(st.clone())), tn.node_id))
                     }),
                 }
                 .map(|_| ())
@@ -201,27 +202,26 @@ impl GeneralSAMState {
 }
 
 #[pymethods]
-impl GeneralSAM {
+impl GeneralSam {
     #[staticmethod]
     pub fn from_chars(s: &str) -> Self {
-        GeneralSAM(CharSide(Arc::new(
-            sam_rs::GeneralSAM::<BTreeTransTable<_>>::from_chars(s.chars())
-                .alter_trans_table_into(),
+        GeneralSam(CharSide(Arc::new(
+            sam_rs::GeneralSam::<BTreeTransTable<_>>::from_chars(s).alter_trans_table_into(),
         )))
     }
 
     #[staticmethod]
     pub fn from_bytes(s: &[u8]) -> Self {
-        GeneralSAM(ByteSide(Arc::new(
-            sam_rs::GeneralSAM::<BTreeTransTable<_>>::from_bytes(s).alter_trans_table_into(),
+        GeneralSam(ByteSide(Arc::new(
+            sam_rs::GeneralSam::<BTreeTransTable<_>>::from_bytes(s).alter_trans_table_into(),
         )))
     }
 
     #[staticmethod]
     pub fn from_trie(trie: &Trie) -> Self {
         for_both_with_side!(trie.0.as_ref(), side, trie => {
-            GeneralSAM(side(Arc::new(
-                sam_rs::GeneralSAM::<BTreeTransTable<_>>::from_trie(trie.get_root_state())
+            GeneralSam(side(Arc::new(
+                sam_rs::GeneralSam::<BTreeTransTable<_>>::from_trie(trie.get_root_state())
                     .alter_trans_table_into(),
             )))
         })
@@ -239,26 +239,26 @@ impl GeneralSAM {
         for_both!(self.0.as_ref(), x => x.num_of_nodes())
     }
 
-    pub fn get_root_state(&self) -> GeneralSAMState {
-        GeneralSAMState(for_both_with_side!(
+    pub fn get_root_state(&self) -> GeneralSamState {
+        GeneralSamState(for_both_with_side!(
             self.0.as_ref(),
             side,
-            x => side(RustBoxBisectGeneralSAMState::new(
+            x => side(RustBoxBisectGeneralSamState::new(
                 x.clone(),
                 SAM_ROOT_NODE_ID,
             )),
         ))
     }
 
-    pub fn get_state(&self, node_id: usize) -> GeneralSAMState {
-        GeneralSAMState(for_both_with_side!(
+    pub fn get_state(&self, node_id: usize) -> GeneralSamState {
+        GeneralSamState(for_both_with_side!(
             self.0.as_ref(),
             side,
-            x => side(RustBoxBisectGeneralSAMState::new(x.clone(), node_id)),
+            x => side(RustBoxBisectGeneralSamState::new(x.clone(), node_id)),
         ))
     }
 
-    pub fn get_topo_and_suf_len_sorted_states(&self) -> Vec<GeneralSAMState> {
+    pub fn get_topo_and_suf_len_sorted_states(&self) -> Vec<GeneralSamState> {
         for_both!(self.0.as_ref(), x => {
             x.get_topo_and_suf_len_sorted_node_ids()
                 .iter()

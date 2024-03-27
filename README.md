@@ -39,12 +39,12 @@ pip install general-sam
 
 ## Usage
 
-### `GeneralSAM`
+### `GeneralSam`
 
 ```python
-from general_sam import GeneralSAM
+from general_sam import GeneralSam
 
-sam = GeneralSAM.from_bytes(b"abcbc")
+sam = GeneralSam.from_bytes(b"abcbc")
 
 # "cbc" is a suffix of "abcbc"
 state = sam.get_root_state()
@@ -58,9 +58,9 @@ assert not state.is_accepting()
 ```
 
 ```python
-from general_sam import GeneralSAM
+from general_sam import GeneralSam
 
-sam = GeneralSAM.from_chars("abcbc")
+sam = GeneralSam.from_chars("abcbc")
 state = sam.get_root_state()
 
 # "b" is not a suffix but at least a substring of "abcbc"
@@ -81,13 +81,13 @@ assert not state.is_accepting() and state.is_nil()
 ```
 
 ```python
-from general_sam import GeneralSAM, GeneralSAMState, build_trie_from_chars
+from general_sam import GeneralSam, GeneralSamState, build_trie_from_chars
 
 trie, _ = build_trie_from_chars(["hello", "Chielo"])
-sam = GeneralSAM.from_trie(trie)
+sam = GeneralSam.from_trie(trie)
 
 
-def fetch_state(s: str) -> GeneralSAMState:
+def fetch_state(s: str) -> GeneralSamState:
     state = sam.get_root_state()
     state.feed_chars(s)
     return state
@@ -193,7 +193,7 @@ assert state.is_nil()
 ### `GreedyTokenizer`
 
 ```python
-from general_sam import GeneralSAM, GreedyTokenizer, build_trie_from_chars
+from general_sam import GeneralSam, GreedyTokenizer, build_trie_from_chars
 
 vocab = ["a", "ab", "b", "bc", "c", "d", "e", "f", "cd", "abcde"]
 trie, token_to_trie_node = build_trie_from_chars(vocab)
@@ -202,7 +202,7 @@ trie_node_to_token = [-1] * trie.num_of_nodes()
 for i, j in enumerate(token_to_trie_node):
     trie_node_to_token[j] = i
 
-sam = GeneralSAM.from_trie(trie)
+sam = GeneralSam.from_trie(trie)
 tokenizer = GreedyTokenizer.from_sam_and_trie(sam, trie)
 
 
