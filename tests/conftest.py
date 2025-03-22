@@ -6,11 +6,14 @@ def parse_from_readme():
 
     Under the BSD 3-Clause "New" or "Revised" License.
     """
-    with open(
-        "tests/test_readme.py",
-        "w",
-        encoding="utf8",
-    ) as out, open("README.md", encoding="utf8") as readme:
+    with (
+        open(
+            "tests/test_readme.py",
+            "w",
+            encoding="utf8",
+        ) as out,
+        open("README.md", encoding="utf8") as readme,
+    ):
         output, mode = [], None
 
         for i, line in enumerate(readme.readlines()):
