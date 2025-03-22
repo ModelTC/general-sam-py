@@ -97,10 +97,10 @@ jobs:
           pytest --import-mode=importlib
       - name: pytest
         if: ${{ !startsWith(matrix.target, 'x86') && matrix.target != 'ppc64' }}
-        uses: uraimo/run-on-arch-action@v2.8
+        uses: uraimo/run-on-arch-action@v3
         with:
           arch: ${{ matrix.target }}
-          distro: ubuntu22.04
+          distro: bookworm
           githubToken: ${{ github.token }}
           install: |
             apt-get update
