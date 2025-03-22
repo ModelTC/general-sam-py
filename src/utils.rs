@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 pub use either::{
-    for_both, Either as CharOrByte,
+    Either as CharOrByte, for_both,
     {Either::Left as CharSide, Either::Right as ByteSide},
 };
 

@@ -3,15 +3,15 @@ extern crate general_sam as general_sam_rs;
 use std::{str::from_utf8, sync::Arc};
 
 use general_sam_rs::{
-    sam as sam_rs, trie as trie_rs, BTreeTransTable, BoxBisectTable, TransitionTable, TravelEvent,
-    SAM_ROOT_NODE_ID,
+    BTreeTransTable, BoxBisectTable, SAM_ROOT_NODE_ID, TransitionTable, TravelEvent, sam as sam_rs,
+    trie as trie_rs,
 };
 use pyo3::exceptions::PyTypeError;
 use pyo3::{prelude::*, types::PyDict};
 
 use crate::trie::Trie;
 use crate::utils::{
-    char_or_byte_type, for_both, get_char_or_byte_variant_name, ByteSide, CharSide,
+    ByteSide, CharSide, char_or_byte_type, for_both, get_char_or_byte_variant_name,
 };
 use crate::{for_both_and_wrap, for_both_with_side};
 
@@ -54,14 +54,15 @@ impl GeneralSamState {
         for_both!(self.0.as_ref(), x => x.is_accepting())
     }
 
-    pub fn get_trans(&self) -> PyObject {
+    pub fn get_trans(&self) -> PyResult<Py<PyDict>> {
         for_both!(self.0.as_ref(), state => {
             Python::with_gil(|py| {
                 if let Some(node) = state.get_node() {
-                    BTreeTransTable::from_kv_iter(node.get_trans().iter()).into_py(py)
+                    BTreeTransTable::from_kv_iter(node.get_trans().iter()).into_pyobject(py)
                 } else {
-                    PyDict::new_bound(py).into_py(py)
+                    PyDict::new(py).into_pyobject(py).map_err(Into::into)
                 }
+                .map(Bound::unbind)
             })
         })
     }

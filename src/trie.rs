@@ -2,12 +2,12 @@ extern crate general_sam as general_sam_rs;
 
 use std::{convert::Infallible, str::from_utf8};
 
-use general_sam_rs::{trie as trie_rs, BTreeTransTable, TravelEvent, TrieNodeAlike};
-use pyo3::prelude::*;
+use general_sam_rs::{BTreeTransTable, TravelEvent, TrieNodeAlike, trie as trie_rs};
+use pyo3::{prelude::*, types::PyDict};
 
 use crate::{
     for_both_with_side,
-    utils::{char_or_byte_type, for_both, ByteSide, CharSide},
+    utils::{ByteSide, CharSide, char_or_byte_type, for_both},
 };
 
 pub(crate) type RustBTreeTrie<T> = trie_rs::Trie<BTreeTransTable<T>>;
@@ -39,9 +39,9 @@ impl TrieNode {
         for_both!(self.1.as_ref(), x => x.accept)
     }
 
-    pub fn get_trans(&self) -> PyObject {
+    pub fn get_trans(&self) -> PyResult<Py<PyDict>> {
         for_both!(self.1.as_ref(), x => {
-            Python::with_gil(|py| x.get_trans().clone().into_py(py))
+            Python::with_gil(|py| x.get_trans().into_pyobject(py).map(Bound::unbind))
         })
     }
 
