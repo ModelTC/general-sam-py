@@ -104,10 +104,13 @@ jobs:
           githubToken: ${{ github.token }}
           install: |
             apt-get update
-            apt-get install -y --no-install-recommends python3 python3-pip
+            apt-get install -y --no-install-recommends python3 python3-full
+            python3 -m venv venv
+            . venv/bin/activate
             pip3 install -U pip
           run: |
             set -e
+            . venv/bin/activate
             pip3 install --pre "general_sam[test]" --find-links dist --force-reinstall
             pytest --import-mode=importlib
   windows:
