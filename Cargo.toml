@@ -16,7 +16,7 @@ crate-type = ["cdylib"]
 [dependencies]
 either = "1.15.0"
 general-sam = { version = "1.0.1", features = ["all"] }
-pyo3 = { version = "0.24.0", features = ["extension-module", "generate-import-lib", "abi3-py310"] }
+pyo3 = { version = "0.24.2", features = ["extension-module", "generate-import-lib", "abi3-py310"] }
 
 [profile.release]
 lto = true
