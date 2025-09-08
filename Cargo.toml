@@ -1,6 +1,6 @@
 [package]
 name = "general-sam-py"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Python bindings for general-sam and some utilities"
