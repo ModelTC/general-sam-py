@@ -41,7 +41,7 @@ impl TrieNode {
 
     pub fn get_trans(&self) -> PyResult<Py<PyDict>> {
         for_both!(self.1.as_ref(), x => {
-            Python::with_gil(|py| x.get_trans().into_pyobject(py).map(Bound::unbind))
+            Python::attach(|py| x.get_trans().into_pyobject(py).map(Bound::unbind))
         })
     }
 
@@ -117,8 +117,8 @@ impl Trie {
     #[pyo3(signature = (in_stack_callback, out_stack_callback, root_node_id=None))]
     pub fn dfs_travel(
         &self,
-        in_stack_callback: PyObject,
-        out_stack_callback: PyObject,
+        in_stack_callback: Py<PyAny>,
+        out_stack_callback: Py<PyAny>,
         root_node_id: Option<usize>,
     ) -> Result<(), PyErr> {
         for_both!(self.0.as_ref(), trie => {
@@ -129,13 +129,13 @@ impl Trie {
             root_state.dfs_travel(|event| {
                 match event {
                     TravelEvent::PushRoot(tn) => {
-                        Python::with_gil(|py| in_stack_callback.call1(py, (tn.node_id, None::<()>)))
+                        Python::attach(|py| in_stack_callback.call1(py, (tn.node_id, None::<()>)))
                     }
                     TravelEvent::Push(tn, _, key) => {
-                        Python::with_gil(|py| in_stack_callback.call1(py, (tn.node_id, key)))
+                        Python::attach(|py| in_stack_callback.call1(py, (tn.node_id, key)))
                     }
                     TravelEvent::Pop(tn, _) => {
-                        Python::with_gil(|py| out_stack_callback.call1(py, (tn.node_id,)))
+                        Python::attach(|py| out_stack_callback.call1(py, (tn.node_id,)))
                     }
                 }
                 .map(|_| ())
@@ -146,8 +146,8 @@ impl Trie {
     #[pyo3(signature = (in_stack_callback, out_stack_callback, root_node_id=None))]
     pub fn bfs_travel(
         &self,
-        in_stack_callback: PyObject,
-        out_stack_callback: PyObject,
+        in_stack_callback: Py<PyAny>,
+        out_stack_callback: Py<PyAny>,
         root_node_id: Option<usize>,
     ) -> Result<(), PyErr> {
         for_both!(self.0.as_ref(), trie => {
@@ -158,13 +158,13 @@ impl Trie {
             root_state.bfs_travel(|event| {
                 match event {
                     TravelEvent::PushRoot(tn) => {
-                        Python::with_gil(|py| in_stack_callback.call1(py, (tn.node_id, None::<()>)))
+                        Python::attach(|py| in_stack_callback.call1(py, (tn.node_id, None::<()>)))
                     }
                     TravelEvent::Push(tn, _, key) => {
-                        Python::with_gil(|py| in_stack_callback.call1(py, (tn.node_id, key)))
+                        Python::attach(|py| in_stack_callback.call1(py, (tn.node_id, key)))
                     }
                     TravelEvent::Pop(tn, _) => {
-                        Python::with_gil(|py| out_stack_callback.call1(py, (tn.node_id,)))
+                        Python::attach(|py| out_stack_callback.call1(py, (tn.node_id,)))
                     }
                 }
                 .map(|_| ())

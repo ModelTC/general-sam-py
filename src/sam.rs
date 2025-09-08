@@ -56,7 +56,7 @@ impl GeneralSamState {
 
     pub fn get_trans(&self) -> PyResult<Py<PyDict>> {
         for_both!(self.0.as_ref(), state => {
-            Python::with_gil(|py| {
+            Python::attach(|py| {
                 if let Some(node) = state.get_node() {
                     BTreeTransTable::from_kv_iter(node.get_trans().iter()).into_pyobject(py)
                 } else {
@@ -123,8 +123,8 @@ impl GeneralSamState {
     pub fn dfs_along(
         &self,
         trie: &Trie,
-        in_stack_callback: PyObject,
-        out_stack_callback: PyObject,
+        in_stack_callback: Py<PyAny>,
+        out_stack_callback: Py<PyAny>,
         trie_node_id: Option<usize>,
     ) -> PyResult<()> {
         let sam_state_and_trie = for_both_and_wrap!(self.0.as_ref(), &trie.0; (s, t) => (s, t))
@@ -140,17 +140,17 @@ impl GeneralSamState {
             let tn = trie.get_state(trie_node_id.unwrap_or(trie_rs::TRIE_ROOT_NODE_ID));
             sam_state.dfs_along(tn, |event| {
                 match event {
-                    TravelEvent::PushRoot((st, tn)) => Python::with_gil(|py| {
+                    TravelEvent::PushRoot((st, tn)) => Python::attach(|py| {
                         in_stack_callback.call1(
                             py,
                             (GeneralSamState(side(st.clone())), tn.node_id, None::<()>),
                         )
                     }),
-                    TravelEvent::Push((st, tn), _, key) => Python::with_gil(|py| {
+                    TravelEvent::Push((st, tn), _, key) => Python::attach(|py| {
                         in_stack_callback
                             .call1(py, (GeneralSamState(side(st.clone())), tn.node_id, key))
                     }),
-                    TravelEvent::Pop((st, tn), _) => Python::with_gil(|py| {
+                    TravelEvent::Pop((st, tn), _) => Python::attach(|py| {
                         out_stack_callback
                             .call1(py, (GeneralSamState(side(st.clone())), tn.node_id))
                     }),
@@ -164,8 +164,8 @@ impl GeneralSamState {
     pub fn bfs_along(
         &self,
         trie: &Trie,
-        in_stack_callback: PyObject,
-        out_stack_callback: PyObject,
+        in_stack_callback: Py<PyAny>,
+        out_stack_callback: Py<PyAny>,
         trie_node_id: Option<usize>,
     ) -> Result<(), PyErr> {
         let sam_state_and_trie = for_both_and_wrap!(self.0.as_ref(), &trie.0; (s, t) => (s, t))
@@ -181,17 +181,17 @@ impl GeneralSamState {
             let tn = trie.get_state(trie_node_id.unwrap_or(trie_rs::TRIE_ROOT_NODE_ID));
             sam_state.bfs_along(tn, |event| {
                 match event {
-                    TravelEvent::PushRoot((st, tn)) => Python::with_gil(|py| {
+                    TravelEvent::PushRoot((st, tn)) => Python::attach(|py| {
                         in_stack_callback.call1(
                             py,
                             (GeneralSamState(side(st.clone())), tn.node_id, None::<()>),
                         )
                     }),
-                    TravelEvent::Push((st, tn), _, key) => Python::with_gil(|py| {
+                    TravelEvent::Push((st, tn), _, key) => Python::attach(|py| {
                         in_stack_callback
                             .call1(py, (GeneralSamState(side(st.clone())), tn.node_id, key))
                     }),
-                    TravelEvent::Pop((st, tn), _) => Python::with_gil(|py| {
+                    TravelEvent::Pop((st, tn), _) => Python::attach(|py| {
                         out_stack_callback
                             .call1(py, (GeneralSamState(side(st.clone())), tn.node_id))
                     }),
