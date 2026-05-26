@@ -14,7 +14,7 @@ name = "general_sam"
 crate-type = ["cdylib"]
 
 [dependencies]
-either = "1.15.0"
+either = "1.16.0"
 general-sam = { version = "1.0.3", features = ["all"] }
 pyo3 = { version = "0.28.3", features = ["extension-module", "generate-import-lib", "abi3-py310"] }
 
