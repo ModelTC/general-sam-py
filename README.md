@@ -217,8 +217,7 @@ assert tokenize("abca") == [(1, 2), (4, 1), (0, 1)]
 
 ## License
 
-- &copy; 2023 Chielo Newctle \<[ChieloNewctle@gmail.com](mailto:ChieloNewctle@gmail.com)\>
-- &copy; 2023 ModelTC Team
+- &copy; 2023-2026 ModelTC Team (Chielo <mail@chielo.org>)
 
 This project is licensed under either of
 

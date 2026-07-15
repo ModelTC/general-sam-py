@@ -4,6 +4,7 @@ use std::convert::Infallible;
 use std::str::from_utf8;
 
 use general_sam_rs::{BTreeTransTable, TravelEvent, TrieNodeAlike, trie as trie_rs};
+use pyo3::exceptions::PyUnicodeDecodeError;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 
@@ -83,7 +84,9 @@ impl Trie {
 
     pub fn insert_bytes(&mut self, b: &[u8]) -> PyResult<usize> {
         Ok(match self.0.as_mut() {
-            CharSide(trie_chars) => trie_chars.insert_chars(from_utf8(b)?),
+            CharSide(trie_chars) => trie_chars.insert_chars(from_utf8(b).map_err(|e| {
+                Python::attach(|py| PyUnicodeDecodeError::new_err_from_utf8(py, b, e))
+            })?),
             ByteSide(trie_bytes) => trie_bytes.insert_bytes(b),
         })
     }

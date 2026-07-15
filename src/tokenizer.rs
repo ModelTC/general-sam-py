@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use general_sam::utils::tokenize as tokenize_rs;
 use general_sam::{BoxBisectTable, TRIE_NIL_NODE_ID, TrieNodeID};
-use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::{PyTypeError, PyUnicodeDecodeError};
 use pyo3::prelude::*;
 
 use crate::sam::{GeneralSam, RustBoxBisectGeneralSam};
@@ -66,7 +66,14 @@ impl GreedyTokenizer {
         unk_token_id: TrieNodeID,
     ) -> PyResult<Vec<(TrieNodeID, usize)>> {
         Ok(match self.0.as_ref() {
-            CharSide(inner) => inner.tokenize(from_utf8(s)?.chars(), &unk_token_id),
+            CharSide(inner) => inner.tokenize(
+                from_utf8(s)
+                    .map_err(|e| {
+                        Python::attach(|py| PyUnicodeDecodeError::new_err_from_utf8(py, s, e))
+                    })?
+                    .chars(),
+                &unk_token_id,
+            ),
             ByteSide(inner) => inner.tokenize(s.iter().copied(), &unk_token_id),
         })
     }

@@ -7,7 +7,7 @@ use general_sam_rs::{
     BTreeTransTable, BoxBisectTable, SAM_ROOT_NODE_ID, TransitionTable, TravelEvent, sam as sam_rs,
     trie as trie_rs,
 };
-use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::{PyTypeError, PyUnicodeDecodeError};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 
@@ -27,7 +27,6 @@ pub(crate) type RustGeneralSamState = char_or_byte_type!(RustBoxBisectGeneralSam
 pub struct GeneralSam(pub RustGeneralSam);
 
 #[pyclass]
-#[derive(Clone)]
 pub struct GeneralSamState(pub RustGeneralSamState);
 
 #[pymethods]
@@ -79,7 +78,7 @@ impl GeneralSamState {
 
     #[pyo3(name = "clone")]
     pub fn copy(&self) -> Self {
-        self.clone()
+        Self(self.0.clone())
     }
 
     pub fn goto_suffix_parent(&mut self) {
@@ -112,7 +111,13 @@ impl GeneralSamState {
     pub fn feed_bytes(&mut self, s: &[u8]) -> PyResult<()> {
         match self.0.as_mut() {
             CharSide(state_chars) => {
-                state_chars.feed(from_utf8(s)?.chars());
+                state_chars.feed(
+                    from_utf8(s)
+                        .map_err(|e| {
+                            Python::attach(|py| PyUnicodeDecodeError::new_err_from_utf8(py, s, e))
+                        })?
+                        .chars(),
+                );
             }
             ByteSide(state_bytes) => {
                 state_bytes.feed_bytes(s);
