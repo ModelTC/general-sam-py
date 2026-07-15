@@ -1,14 +1,15 @@
-use std::{str::from_utf8, sync::Arc};
+use std::str::from_utf8;
+use std::sync::Arc;
 
-use general_sam::{BoxBisectTable, TRIE_NIL_NODE_ID, TrieNodeID, utils::tokenize as tokenize_rs};
-use pyo3::{exceptions::PyTypeError, prelude::*};
+use general_sam::utils::tokenize as tokenize_rs;
+use general_sam::{BoxBisectTable, TRIE_NIL_NODE_ID, TrieNodeID};
+use pyo3::exceptions::PyTypeError;
+use pyo3::prelude::*;
 
-use crate::{
-    char_or_byte_type, for_both_and_wrap, for_both_with_side,
-    sam::{GeneralSam, RustBoxBisectGeneralSam},
-    trie::Trie,
-    utils::{ByteSide, CharSide, get_char_or_byte_variant_name},
-};
+use crate::sam::{GeneralSam, RustBoxBisectGeneralSam};
+use crate::trie::Trie;
+use crate::utils::{ByteSide, CharSide, get_char_or_byte_variant_name};
+use crate::{char_or_byte_type, for_both_and_wrap, for_both_with_side};
 
 pub(crate) type RustBoxBisectGreedyTokenizer<T> =
     tokenize_rs::GreedyTokenizer<BoxBisectTable<T>, TrieNodeID, RustBoxBisectGeneralSam<T>>;

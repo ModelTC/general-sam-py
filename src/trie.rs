@@ -1,14 +1,14 @@
 extern crate general_sam as general_sam_rs;
 
-use std::{convert::Infallible, str::from_utf8};
+use std::convert::Infallible;
+use std::str::from_utf8;
 
 use general_sam_rs::{BTreeTransTable, TravelEvent, TrieNodeAlike, trie as trie_rs};
-use pyo3::{prelude::*, types::PyDict};
+use pyo3::prelude::*;
+use pyo3::types::PyDict;
 
-use crate::{
-    for_both_with_side,
-    utils::{ByteSide, CharSide, char_or_byte_type, for_both},
-};
+use crate::for_both_with_side;
+use crate::utils::{ByteSide, CharSide, char_or_byte_type, for_both};
 
 pub(crate) type RustBTreeTrie<T> = trie_rs::Trie<BTreeTransTable<T>>;
 pub(crate) type RustBTreeTrieNode<T> = trie_rs::TrieNode<BTreeTransTable<T>>;

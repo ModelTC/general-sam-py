@@ -1,13 +1,15 @@
 extern crate general_sam as general_sam_rs;
 
-use std::{str::from_utf8, sync::Arc};
+use std::str::from_utf8;
+use std::sync::Arc;
 
 use general_sam_rs::{
     BTreeTransTable, BoxBisectTable, SAM_ROOT_NODE_ID, TransitionTable, TravelEvent, sam as sam_rs,
     trie as trie_rs,
 };
 use pyo3::exceptions::PyTypeError;
-use pyo3::{prelude::*, types::PyDict};
+use pyo3::prelude::*;
+use pyo3::types::PyDict;
 
 use crate::trie::Trie;
 use crate::utils::{
