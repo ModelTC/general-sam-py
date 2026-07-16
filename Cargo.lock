@@ -45,7 +45,7 @@ dependencies = [
 
 [[package]]
 name = "general-sam-py"
-version = "1.0.5-dev3"
+version = "1.0.4-post0"
 dependencies = [
  "either",
  "general-sam",
