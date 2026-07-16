@@ -63,108 +63,81 @@ jobs:
           sccache: true
           manylinux: auto
   linux:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [x86_64]
+        target:
+          - arch: x86_64
+            os: ubuntu-latest
+          - arch: aarch64
+            os: ubuntu-24.04-arm
+    runs-on: ${{ matrix.target.os }}
     steps:
       - *checkout
-      - uses: actions/setup-python@v6
+      - &setup-python
+        uses: actions/setup-python@v6
         with:
           python-version: "3.10"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          target: ${{ matrix.target }}
           args: --release --out dist --interpreter 3.10
           sccache: true
           manylinux: auto
       - name: Upload wheels
         uses: actions/upload-artifact@v7
         with:
-          name: wheels-linux-${{ matrix.target }}
+          name: wheels-linux-${{ matrix.target.arch }}
           path: dist
-      - name: pytest
-        if: ${{ startsWith(matrix.target, 'x86_64') }}
+      - &pytest
+        name: Run pytest
         shell: bash
         run: |
           set -e
-          pip install --pre "general_sam[tests]" --find-links dist --force-reinstall
+          WHEEL="$(find dist -maxdepth 1 -type f -name 'general_sam-*.whl' -print -quit)"
+          pip install "$WHEEL"[tests] --force-reinstall
           pytest --import-mode=importlib
-      - name: pytest
-        if: ${{ !startsWith(matrix.target, 'x86') && matrix.target != 'ppc64' }}
-        uses: uraimo/run-on-arch-action@v3
-        with:
-          arch: ${{ matrix.target }}
-          distro: bookworm
-          githubToken: ${{ github.token }}
-          install: |
-            apt-get update
-            apt-get install -y --no-install-recommends python3 python3-full
-          run: |
-            set -e
-            python3 -m venv venv
-            . venv/bin/activate
-            pip3 install -U pip
-            pip3 install --pre "general_sam[tests]" --find-links dist --force-reinstall
-            pytest --import-mode=importlib
   windows:
-    runs-on: windows-latest
     strategy:
       matrix:
-        target: [x64]
+        target:
+          - arch: x86_64
+            os: windows-latest
+    runs-on: ${{ matrix.target.os }}
     steps:
       - *checkout
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
-          architecture: ${{ matrix.target }}
+      - *setup-python
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          target: ${{ matrix.target }}
           args: --release --out dist --interpreter 3.10
           sccache: true
       - name: Upload wheels
         uses: actions/upload-artifact@v7
         with:
-          name: wheels-windows-${{ matrix.target }}
+          name: wheels-windows-${{ matrix.target.arch }}
           path: dist
-      - name: pytest
-        if: ${{ !startsWith(matrix.target, 'aarch64') }}
-        shell: bash
-        run: |
-          set -e
-          pip install --pre "general_sam[tests]" --find-links dist --force-reinstall
-          pytest --import-mode=importlib
+      - *pytest
   macos:
-    runs-on: macos-latest
     strategy:
       matrix:
-        target: [x86_64, aarch64]
+        target:
+          - arch: aarch64
+            os: macos-latest
+    runs-on: ${{ matrix.target.os }}
     steps:
       - *checkout
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
+      - *setup-python
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          target: ${{ matrix.target }}
           args: --release --out dist --interpreter 3.10
           sccache: true
       - name: Upload wheels
         uses: actions/upload-artifact@v7
         with:
-          name: wheels-macos-${{ matrix.target }}
+          name: wheels-macos-${{ matrix.target.arch }}
           path: dist
-      - name: pytest
-        if: ${{ !startsWith(matrix.target, 'aarch64') }}
-        shell: bash
-        run: |
-          set -e
-          pip install --pre "general_sam[tests]" --find-links dist --force-reinstall
-          pytest --import-mode=importlib
+      - *pytest
   sdist:
     needs: [tests]
     runs-on: ubuntu-latest
@@ -198,7 +171,7 @@ jobs:
       - name: Generate artifact attestation
         uses: actions/attest@v4
         with:
-          subject-path: 'dist/*'
+          subject-path: "dist/*"
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
       - name: Upload to GitHub Release
