@@ -1,6 +1,6 @@
 [package]
 name = "general-sam-py"
-version = "1.0.5-dev1"
+version = "1.0.5-dev2"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Python bindings for general-sam and some utilities"
@@ -18,6 +18,5 @@ general-sam = { version = "1.0.4", features = ["all"] }
 pyo3 = { version = "0.29.0", features = ["extension-module", "generate-import-lib", "abi3-py310"] }
 
 [profile.release]
-lto = true
-strip = true
-opt-level = "z"
+lto = "fat"
+strip = "debuginfo"
