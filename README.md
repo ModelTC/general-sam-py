@@ -4,8 +4,8 @@
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-informational.svg)](#license)
 [![Build status](https://github.com/ModelTC/general-sam-py/actions/workflows/ci.yml/badge.svg)](https://github.com/ModelTC/general-sam-py/actions)
 
-Python bindings for [`general-sam`](https://github.com/ModelTC/general-sam)
-and some utilities.
+Python bindings for [`general-sam`](https://github.com/ModelTC/general-sam) and
+some utilities.
 
 ```mermaid
 flowchart LR
@@ -217,13 +217,17 @@ assert tokenize("abca") == [(1, 2), (4, 1), (0, 1)]
 
 ## License
 
-- &copy; 2023-2026 ModelTC Team (Chielo <mail@chielo.org>)
+- &copy; 2023-2026 ModelTC Team (Chielo
+  \<[mail@chielo.org](mailto:mail@chielo.org)\>)
 
 This project is licensed under either of
 
-- [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) ([`LICENSE-APACHE`](LICENSE-APACHE))
-- [MIT license](https://opensource.org/licenses/MIT) ([`LICENSE-MIT`](LICENSE-MIT))
+- [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+  ([`LICENSE-APACHE`](LICENSE-APACHE))
+- [MIT license](https://opensource.org/licenses/MIT)
+  ([`LICENSE-MIT`](LICENSE-MIT))
 
 at your option.
 
-The [SPDX](https://spdx.dev) license identifier for this project is `MIT OR Apache-2.0`.
+The [SPDX](https://spdx.dev) license identifier for this project is
+`MIT OR Apache-2.0`.
