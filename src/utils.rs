@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
+pub use either::Either as CharOrByte;
 pub use either::Either::{Left as CharSide, Right as ByteSide};
-pub use either::{Either as CharOrByte, for_both};
 
 #[macro_export]
 macro_rules! char_or_byte_type {
@@ -12,8 +12,6 @@ macro_rules! char_or_byte_type {
         >
     };
 }
-
-pub use char_or_byte_type;
 
 #[derive(Debug, Clone)]
 pub struct InconsistentCharOrByte;

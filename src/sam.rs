@@ -3,6 +3,7 @@ extern crate general_sam as general_sam_rs;
 use std::str::from_utf8;
 use std::sync::Arc;
 
+use either::for_both;
 use general_sam_rs::{
     BTreeTransTable, BoxBisectTable, SAM_ROOT_NODE_ID, TransitionTable, TravelEvent, sam as sam_rs,
     trie as trie_rs,
@@ -12,10 +13,8 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 
 use crate::trie::Trie;
-use crate::utils::{
-    ByteSide, CharSide, char_or_byte_type, for_both, get_char_or_byte_variant_name,
-};
-use crate::{for_both_and_wrap, for_both_with_side};
+use crate::utils::{ByteSide, CharSide, get_char_or_byte_variant_name};
+use crate::{char_or_byte_type, for_both_and_wrap, for_both_with_side};
 
 pub(crate) type RustBoxBisectGeneralSam<T> = Arc<sam_rs::GeneralSam<BoxBisectTable<T>>>;
 pub(crate) type RustBoxBisectGeneralSamState<T> =

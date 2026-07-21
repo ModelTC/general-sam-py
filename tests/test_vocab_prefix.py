@@ -1,4 +1,4 @@
-from general_sam import VocabPrefixAutomaton, CountInfo
+from general_sam import CountInfo, VocabPrefixAutomaton
 
 
 def test_chinese_chars_vocab_prefix():
