@@ -1,4 +1,5 @@
 name: CI
+
 on:
   push:
     branches:
@@ -7,18 +8,27 @@ on:
       - "*"
   pull_request:
   workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+    working-directory: python
+
 permissions:
   contents: read
+
 jobs:
-  format:
-    name: Check Python format
+  style:
+    name: Style
     runs-on: ubuntu-latest
     steps:
       - &checkout
+        name: Checkout repository
         uses: actions/checkout@v7
         with:
-          fetch-depth: 0
-      - name: Set up Python
+          persist-credentials: false
+      - &setup-python
+        name: Set up Python
         uses: actions/setup-python@v7
         with:
           python-version: "3.10"
@@ -27,17 +37,18 @@ jobs:
       - name: Ruff
         run: ruff check .
       - name: Black
-        run: black --check --diff .
-  rustfmt:
-    name: Check Rust format
-    runs-on: ubuntu-latest
-    steps:
-      - *checkout
-      - run: rustup update stable && rustup default stable
-      - run: rustup component add rustfmt
-      - run: cargo fmt --all --check
+        run: black --target-version py310 --check --diff .
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt, clippy
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Rustfmt
+        run: cargo fmt --all --check
+
   tests:
-    name: Run tests
+    name: Tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -50,95 +61,52 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install locally
         run: pip install -e ".[tests]"
-      - name: Install additional dependencies
-        run: pip install pytest-md pytest-emoji
-      - uses: pavelzw/pytest-action@v2
-        with:
-          emoji: false
-          verbose: true
-          job-summary: true
-      - name: Test building wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          sccache: true
-          manylinux: auto
-  linux:
+      - name: Install dependencies
+        run: pip install pytest-md-report
+      - name: Pytest
+        run: pytest --md-report --md-report-flavor gfm --md-report-output $GITHUB_STEP_SUMMARY
+
+  build:
     strategy:
       matrix:
-        target:
-          - arch: x86_64
-            os: ubuntu-latest
-          - arch: aarch64
-            os: ubuntu-24.04-arm
-    runs-on: ${{ matrix.target.os }}
+        include:
+          - os: ubuntu-latest
+            manylinux: auto
+          - os: ubuntu-24.04-arm
+            manylinux: auto
+          - os: windows-latest
+          - os: macos-latest
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     steps:
       - *checkout
-      - &setup-python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.10"
+      - *setup-python
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
+          working-directory: python
           args: --release --out dist --interpreter 3.10
           sccache: true
-          manylinux: auto
+          manylinux: ${{ matrix.manylinux }}
       - name: Upload wheels
         uses: actions/upload-artifact@v7
         with:
-          name: wheels-linux-${{ matrix.target.arch }}
-          path: dist
-      - &pytest
-        name: Run pytest
-        shell: bash
+          name: wheels-${{ matrix.os }}
+          path: python/dist
+      - name: Install wheels
         run: |
-          set -e
-          WHEEL="$(find dist -maxdepth 1 -type f -name 'general_sam-*.whl' -print -quit)"
-          pip install "$WHEEL"[tests] --force-reinstall
-          pytest --import-mode=importlib
-  windows:
-    strategy:
-      matrix:
-        target:
-          - arch: x86_64
-            os: windows-latest
-    runs-on: ${{ matrix.target.os }}
-    steps:
-      - *checkout
-      - *setup-python
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          args: --release --out dist --interpreter 3.10
-          sccache: true
-      - name: Upload wheels
-        uses: actions/upload-artifact@v7
-        with:
-          name: wheels-windows-${{ matrix.target.arch }}
-          path: dist
-      - *pytest
-  macos:
-    strategy:
-      matrix:
-        target:
-          - arch: aarch64
-            os: macos-latest
-    runs-on: ${{ matrix.target.os }}
-    steps:
-      - *checkout
-      - *setup-python
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          args: --release --out dist --interpreter 3.10
-          sccache: true
-      - name: Upload wheels
-        uses: actions/upload-artifact@v7
-        with:
-          name: wheels-macos-${{ matrix.target.arch }}
-          path: dist
-      - *pytest
+          shopt -s nullglob
+          wheels=(dist/*.whl)
+          if (( ${#wheels[@]} != 1 )); then
+            echo "expected exactly one wheel, got: ${wheels[*]:-none}" >&2
+            exit 1
+          fi
+          pip install "${wheels[0]}[tests]" --force-reinstall
+      - name: Pytest
+        run: pytest --import-mode importlib
+
   sdist:
+    name: Source distribution
     needs: [tests]
     runs-on: ubuntu-latest
     steps:
@@ -146,18 +114,20 @@ jobs:
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
+          working-directory: python
           command: sdist
           args: --out dist
       - name: Upload sdist
         uses: actions/upload-artifact@v7
         with:
           name: wheels-sdist
-          path: dist
+          path: python/dist
+
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.ref, 'refs/tags/') && github.repository_owner == 'ModelTC' }}
-    needs: [tests, format, rustfmt, linux, windows, macos, sdist]
+    if: startsWith(github.ref, 'refs/tags/') && github.repository_owner == 'ModelTC'
+    needs: [style, tests, build, sdist]
     permissions:
       id-token: write
       contents: write
@@ -175,7 +145,7 @@ jobs:
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
       - name: Upload to GitHub Release
-        if: ${{ startsWith(github.ref, 'refs/tags/') && !contains(github.ref, 'dev') }}
+        if: "!contains(github.ref, 'dev')"
         uses: softprops/action-gh-release@v3
         with:
           working_directory: dist
@@ -183,22 +153,4 @@ jobs:
             *.whl
             *.tar.gz
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}
-  dependabot:
-    name: Dependabot Auto-merge
-    if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'}}
-    needs: [tests, format, rustfmt, linux, windows, macos, sdist]
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: write
-    steps:
-      - id: metadata
-        uses: dependabot/fetch-metadata@v3
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-      - run: |
-          gh pr review --approve "$PR_URL"
-          gh pr merge --squash --auto "$PR_URL"
-        env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          fail_on_unmatched_files: true
