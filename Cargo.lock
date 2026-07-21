@@ -36,9 +36,9 @@ checksum = "91622ff5e7162018101f2fea40d6ebf4a78bbe5a49736a2020649edf9693679e"
 
 [[package]]
 name = "general-sam"
-version = "1.0.4"
+version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "124525b8659b85d792329338225f7755988cd7cf7b4193a3c29bafa0f04ba8dc"
+checksum = "0b6d39d6877324d5f77a20d26261aeee526493dd92675ca762290b9b8412983a"
 dependencies = [
  "rand",
 ]
