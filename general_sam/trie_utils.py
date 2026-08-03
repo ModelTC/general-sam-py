@@ -1,12 +1,12 @@
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass
-from typing import Collection, Sequence, Tuple
 
 from .general_sam import Trie
 
 
 def build_trie_from_chars(
     strings: Collection[str],
-) -> Tuple[Trie, Sequence[int]]:
+) -> tuple[Trie, Sequence[int]]:
     trie = Trie.in_chars()
     node_ids = [trie.insert_chars(s) for s in strings]
     return trie, node_ids
@@ -14,7 +14,7 @@ def build_trie_from_chars(
 
 def build_trie_from_bytes(
     strings: Collection[bytes],
-) -> Tuple[Trie, Sequence[int]]:
+) -> tuple[Trie, Sequence[int]]:
     trie = Trie.in_bytes()
     node_ids = [trie.insert_bytes(s) for s in strings]
     return trie, node_ids

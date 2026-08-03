@@ -1,4 +1,4 @@
-from typing import Collection, Iterable, Optional, Sequence, Union
+from collections.abc import Collection, Iterable, Sequence
 
 from general_sam import (
     CountInfo,
@@ -9,8 +9,8 @@ from general_sam import (
 
 
 def _test_token_healing_batch(
-    vocab: Collection[Union[str, bytes]],
-    token_sequences: Iterable[Union[Sequence[str], Sequence[bytes]]],
+    vocab: Collection[str | bytes],
+    token_sequences: Iterable[Sequence[str] | Sequence[bytes]],
     bytes_or_chars: VocabPrefixBytesOrChars,
 ):
     automaton = VocabPrefixAutomaton(vocab, bytes_or_chars=bytes_or_chars)
@@ -18,7 +18,7 @@ def _test_token_healing_batch(
     vocab_sorted = sorted(vocab)
 
     def validate(
-        query: Union[str, bytes], state: GeneralSamState, cnt_info: Optional[CountInfo]
+        query: str | bytes, state: GeneralSamState, cnt_info: CountInfo | None
     ):
         import bisect
 
@@ -42,7 +42,7 @@ def _test_token_healing_batch(
 
         assert state.is_nil() ^ any(query in i for i in vocab)  # pyright: ignore
 
-    def check(tokens: Sequence[Union[str, bytes]]):
+    def check(tokens: Sequence[str | bytes]):
         state = automaton.get_root_state()
         query = "" if isinstance(tokens[0], str) else b""
 
@@ -58,7 +58,7 @@ def _test_token_healing_batch(
 
 def _test_batch(
     vocab: Collection[str],
-    token_sequences: Iterable[Union[Sequence[str], Sequence[bytes]]],
+    token_sequences: Iterable[Sequence[str] | Sequence[bytes]],
 ):
     _test_token_healing_batch(
         vocab,

@@ -1,13 +1,7 @@
 import enum
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import replace
 from typing import (
-    Callable,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
     cast,
 )
 
@@ -27,31 +21,29 @@ class VocabPrefixBytesOrChars(enum.Enum):
     CHARS = enum.auto()
 
 
-class VocabPrefixAutomaton(object):
+class VocabPrefixAutomaton:
     def __init__(
         self,
-        vocab: Iterable[Union[str, bytes]],
-        bytes_or_chars: Union[
-            str, VocabPrefixBytesOrChars
-        ] = VocabPrefixBytesOrChars.CHARS,
+        vocab: Iterable[str | bytes],
+        bytes_or_chars: str | VocabPrefixBytesOrChars = VocabPrefixBytesOrChars.CHARS,
     ) -> None:
         if isinstance(bytes_or_chars, str):
             bytes_or_chars = getattr(VocabPrefixBytesOrChars, bytes_or_chars.upper())
 
         self.bytes_or_chars = cast(VocabPrefixBytesOrChars, bytes_or_chars)
 
-        self.vocab: Sequence[Union[str, bytes]] = list(vocab)
+        self.vocab: Sequence[str | bytes] = list(vocab)
 
         if self.bytes_or_chars == VocabPrefixBytesOrChars.BYTES and isinstance(
             self.vocab[0], str
         ):
-            self.vocab = list(cast(str, i).encode() for i in self.vocab)
+            self.vocab = [cast(str, i).encode() for i in self.vocab]
         if self.bytes_or_chars == VocabPrefixBytesOrChars.CHARS and isinstance(
             self.vocab[0], bytes
         ):
-            self.vocab = list(cast(bytes, i).decode() for i in self.vocab)
+            self.vocab = [cast(bytes, i).decode() for i in self.vocab]
 
-        self.vocab_rev: Sequence[Union[str, bytes]] = list(s[::-1] for s in vocab)
+        self.vocab_rev: Sequence[str | bytes] = [s[::-1] for s in vocab]
 
         sort_seq, trie_builder = {
             VocabPrefixBytesOrChars.BYTES: (sort_bytes, build_trie_from_bytes),
@@ -59,7 +51,7 @@ class VocabPrefixAutomaton(object):
         }[self.bytes_or_chars]
         self.vocab_sort_res = cast(SortResult, sort_seq(self.vocab))
         self.trie_rev, self.trie_rev_node_ids = cast(
-            Tuple[Trie, Sequence[int]],
+            tuple[Trie, Sequence[int]],
             trie_builder(self.vocab_rev),
         )
 
@@ -67,14 +59,14 @@ class VocabPrefixAutomaton(object):
         self._gen_cnt_info_in_sam()
 
     @property
-    def _state_feed_fn(self) -> Callable[[GeneralSamState, Union[bytes, str]], None]:
+    def _state_feed_fn(self) -> Callable[[GeneralSamState, bytes | str], None]:
         return {
             VocabPrefixBytesOrChars.BYTES: GeneralSamState.feed_bytes,
             VocabPrefixBytesOrChars.CHARS: GeneralSamState.feed_chars,
         }[self.bytes_or_chars]
 
     def _gen_cnt_info_in_sam(self):
-        self.cnt_info_in_sam: List[Optional[CountInfo]] = [
+        self.cnt_info_in_sam: list[CountInfo | None] = [
             None for _ in range(self.sam_rev.num_of_nodes())
         ]
 
@@ -131,8 +123,8 @@ class VocabPrefixAutomaton(object):
         return self.sam_rev.get_root_state()
 
     def prepend_feed(
-        self, state: GeneralSamState, token: Union[str, bytes]
-    ) -> Optional[CountInfo]:
+        self, state: GeneralSamState, token: str | bytes
+    ) -> CountInfo | None:
         if self.bytes_or_chars == VocabPrefixBytesOrChars.BYTES and isinstance(
             token, str
         ):
