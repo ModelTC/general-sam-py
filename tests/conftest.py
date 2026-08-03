@@ -21,7 +21,7 @@ def parse_from_readme():
 
             if mode is None and line.strip() == "```python":
                 mode = "first_line"
-                output[i] = "def test_line_%s():\n" % i
+                output[i] = f"def test_line_{i}():\n"
                 continue
 
             if line.strip() == "```":
@@ -46,9 +46,9 @@ def parse_from_readme():
                     mode = "test"
 
             if mode in ("doctest", "test"):
-                output[i] = "    " + line
+                output[i] = f"    {line}"
             else:
-                output[i] = "# %s" % line
+                output[i] = f"# {line}"
 
         out.writelines(output)
 

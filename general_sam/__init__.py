@@ -20,18 +20,18 @@ from .vocab_prefix import (
 )
 
 __all__ = [
+    "CountInfo",
     "GeneralSam",
     "GeneralSamState",
     "GreedyTokenizer",
+    "SortResult",
     "Trie",
     "TrieNode",
-    "CountInfo",
-    "SortResult",
-    "build_trie_from_chars",
-    "build_trie_from_bytes",
-    "sort_chars",
-    "sort_bytes",
-    "sort_seq_via_trie",
     "VocabPrefixAutomaton",
     "VocabPrefixBytesOrChars",
+    "build_trie_from_bytes",
+    "build_trie_from_chars",
+    "sort_bytes",
+    "sort_chars",
+    "sort_seq_via_trie",
 ]
